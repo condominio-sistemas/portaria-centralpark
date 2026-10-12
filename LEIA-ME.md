@@ -57,9 +57,9 @@ Em **Project Settings → API Keys**, copie:
 
 ## 5. Publicar no GitHub Pages
 
-1. Crie um repositório **público** no GitHub (`encomendas.centralpark`) com o conteúdo da pasta `online/`.
+1. Crie um repositório **público** no GitHub (`portaria-centralpark`) com o conteúdo da pasta `online/`.
 2. **Settings → Pages → Build and deployment**: *Deploy from a branch*, branch `main`, pasta **`/docs`** → Save.
-3. Em 1–2 minutos o sistema fica em `https://driellensatyro.github.io/encomendas.centralpark/`.
+3. Em 1–2 minutos o sistema fica em `https://driellensatyro.github.io/portaria-centralpark/`.
 
 O código fica visível por ser repositório público, mas os dados não: eles ficam no Supabase, protegidos por login e pelas regras do banco.
 **Nunca coloque backups `.json` no repositório.** O `.gitignore` já bloqueia esses arquivos.
