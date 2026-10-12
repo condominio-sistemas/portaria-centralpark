@@ -422,8 +422,9 @@
         <div class="foto-opcoes">
           <input type="file" id="foto" accept="image/*" capture="environment" style="width:auto;flex:1;min-width:180px;">
           <button type="button" class="btn btn-outline" id="btnAbrirCamera">📷 Tirar foto pela câmera</button>
+          <button type="button" class="btn btn-primary" id="btnCadastrarCelular">📱 Tirar pelo celular</button>
         </div>
-        <small class="hint">Anexe um arquivo de imagem, use a câmera do computador ou copie a foto (ex.: no WhatsApp Desktop, botão direito → Copiar) e pressione <strong>Ctrl+V</strong> nesta tela. Para tirar a foto pelo celular, cadastre a encomenda e use o botão "📷 Foto" → "Celular (QR code)".</small>
+        <small class="hint">Anexe um arquivo de imagem, use a câmera do computador ou copie a foto (ex.: no WhatsApp Desktop, botão direito → Copiar) e pressione <strong>Ctrl+V</strong> nesta tela. Ou clique em <strong>"📱 Tirar pelo celular"</strong>: a encomenda é salva e aparece um QR code para fotografar com o celular.</small>
         <div id="previewFoto" style="margin-top:10px;"></div>
 
         <div class="actions">
@@ -1222,12 +1223,16 @@
     if(destino) destino(dataUrl);
   });
 
-  form.addEventListener('submit', async function(e){
-    e.preventDefault();
+  let avisoAoFecharFoto = null; // encomenda cadastrada pelo celular: avisar moradores ao fechar a janela da foto
+
+  // salva a encomenda do formulário; com viaCelular, abre em seguida o QR code para a foto
+  async function cadastrarEncomenda(viaCelular){
     const apto = document.getElementById('apto').value.trim();
-    if(!apto){ toast('Informe o apartamento.'); return; }
+    if(!apto){ toast('Informe o apartamento.'); document.getElementById('apto').focus(); return; }
     const btn = document.getElementById('btnCadastrar');
+    const btnCel = document.getElementById('btnCadastrarCelular');
     btn.disabled = true;
+    btnCel.disabled = true;
     btn.textContent = 'Salvando…';
     try{
       const id = uuid();
@@ -1249,7 +1254,11 @@
       toast('Encomenda cadastrada para o apto ' + apto + '.');
 
       const destinatarios = construirDestinatarios(novo.apto, novo.telefone, novo.morador || ('morador(a) do apto ' + novo.apto));
-      if(destinatarios.length > 0){
+      if(viaCelular && !novo.fotoPath){
+        if(destinatarios.length > 0) avisoAoFecharFoto = novo.id;
+        abrirModalFoto(novo.id);
+        document.getElementById('btnFotoCelular').click();
+      } else if(destinatarios.length > 0){
         abrirModalAviso(novo);
       }
 
@@ -1263,8 +1272,17 @@
       falha('Não foi possível cadastrar a encomenda. Tente novamente.', err);
     }finally{
       btn.disabled = false;
+      btnCel.disabled = false;
       btn.textContent = 'Cadastrar encomenda';
     }
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    cadastrarEncomenda(false);
+  });
+  document.getElementById('btnCadastrarCelular').addEventListener('click', function(){
+    cadastrarEncomenda(true);
   });
 
   // ---------- pedaços comuns das listas ----------
@@ -1721,10 +1739,16 @@
   };
 
   function fecharModalFoto(){
+    const idFechado = fotoEncomendaId;
     fotoEncomendaId = null;
     esconderQr();
     zonaSoltarFoto.classList.remove('arrastando');
     modalFoto.classList.add('hidden');
+    if(avisoAoFecharFoto && avisoAoFecharFoto === idFechado){
+      avisoAoFecharFoto = null;
+      const pkg = dados.find(p => p.id === idFechado);
+      if(pkg) abrirModalAviso(pkg);
+    }
   }
 
   async function aplicarFotoNaEncomenda(id, dataUrl){
