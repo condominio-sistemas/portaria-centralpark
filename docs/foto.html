@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Foto da encomenda - Central Park</title>
+<style>
+  :root{
+    --grafite:#1c1a17; --marca:#8bb254; --marca-escuro:#4d7330; --creme:#f6f2ea;
+    --borda:#e6e0d4; --texto-2:#6b665c; --vermelho:#b3261e; --verde:#1e7b4f;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--creme);color:var(--grafite);}
+  header{background:var(--grafite);color:#f3eee2;padding:14px 18px;}
+  header h1{margin:0;font-size:1.05rem;}
+  header .sub{font-size:.8rem;color:#c9c2b4;margin-top:2px;}
+  main{max-width:480px;margin:0 auto;padding:18px 16px 40px;}
+  .card{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:20px;box-shadow:0 4px 14px rgba(28,26,23,.06);}
+  .apto{font-size:1.5rem;font-weight:800;}
+  .morador{color:var(--texto-2);margin-top:2px;}
+  .btn{display:block;width:100%;padding:16px;border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:center;margin-top:14px;}
+  .btn-primary{background:var(--marca-escuro);color:#fff;}
+  .btn-verde{background:var(--verde);color:#fff;}
+  .btn-outline{background:#fff;border:1px solid #d9d2c4;color:var(--grafite);}
+  .btn:disabled{opacity:.55;}
+  #preview img{display:block;width:100%;border-radius:10px;margin-top:14px;}
+  .msg{text-align:center;padding:10px 0;}
+  .msg .icone{font-size:3rem;}
+  .erro{color:var(--vermelho);}
+  .hint{color:var(--texto-2);font-size:.85rem;margin-top:10px;text-align:center;}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Condomínio Central Park</h1>
+  <div class="sub">Foto da encomenda pelo celular</div>
+</header>
+<main>
+  <div class="card">
+    <div id="carregando" class="msg">Carregando…</div>
+
+    <div id="telaFoto" class="hidden">
+      <div class="apto" id="apto"></div>
+      <div class="morador" id="morador"></div>
+      <label class="btn btn-primary" id="btnTirar" for="inputFoto">📷 Tirar foto</label>
+      <input type="file" id="inputFoto" accept="image/*" capture="environment" class="hidden">
+      <div id="preview"></div>
+      <button class="btn btn-verde hidden" id="btnEnviar">Enviar foto</button>
+      <p class="hint" id="validade"></p>
+    </div>
+
+    <div id="telaOk" class="msg hidden">
+      <div class="icone">✅</div>
+      <p><strong>Foto enviada!</strong><br>Ela já aparece no computador da portaria. Pode fechar esta página.</p>
+    </div>
+
+    <div id="telaErro" class="msg hidden">
+      <div class="icone">⚠️</div>
+      <p class="erro" id="textoErro"></p>
+    </div>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  const cfg = window.CONFIG || {};
+  const token = new URLSearchParams(location.search).get('t') || '';
+  let blobFoto = null;
+
+  function mostrar(id){
+    ['carregando','telaFoto','telaOk','telaErro'].forEach(x => document.getElementById(x).classList.toggle('hidden', x !== id));
+  }
+  function erro(msg){
+    document.getElementById('textoErro').textContent = msg;
+    mostrar('telaErro');
+  }
+
+  if(!/^[0-9a-f-]{36}$/i.test(token)){ erro('Link inválido. Leia novamente o QR code no computador da portaria.'); return; }
+  if(!window.supabase || !cfg.SUPABASE_URL){ erro('Não foi possível carregar o sistema. Verifique a internet do celular.'); return; }
+
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  });
+
+  function comprimir(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = e => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const maxLado = 1024;
+          let w = img.width, h = img.height;
+          if(w > h && w > maxLado){ h = Math.round(h * maxLado / w); w = maxLado; }
+          else if(h > maxLado){ w = Math.round(w * maxLado / h); h = maxLado; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          c.toBlob(b => b ? resolve(b) : reject(new Error('falha ao gerar imagem')), 'image/jpeg', 0.75);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function iniciar(){
+    const { data, error } = await sb.rpc('info_token_foto', { p_token: token });
+    if(error){ erro('Não foi possível consultar a encomenda. Verifique a internet do celular.'); return; }
+    const info = data && data[0];
+    if(!info){ erro('Encomenda não encontrada. Gere um novo QR code no computador da portaria.'); return; }
+    if(!info.valido){ erro('Este QR code expirou ou já foi usado. Gere um novo no computador da portaria.'); return; }
+    document.getElementById('apto').textContent = 'Apto ' + info.apto;
+    document.getElementById('morador').textContent = info.morador || '';
+    const expira = new Date(info.expira_em);
+    document.getElementById('validade').textContent = 'Link válido até ' + expira.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) + '.';
+    mostrar('telaFoto');
+  }
+
+  document.getElementById('inputFoto').addEventListener('change', async function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    try{
+      blobFoto = await comprimir(file);
+      const url = URL.createObjectURL(blobFoto);
+      document.getElementById('preview').innerHTML = '<img src="' + url + '" alt="Prévia da foto">';
+      document.getElementById('btnEnviar').classList.remove('hidden');
+      document.getElementById('btnTirar').textContent = '📷 Tirar outra foto';
+    }catch(err){
+      console.error(err);
+      alert('Não foi possível ler esta foto. Tente novamente.');
+    }
+  });
+
+  document.getElementById('btnEnviar').addEventListener('click', async function(){
+    if(!blobFoto) return;
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+    try{
+      const caminho = 'celular/' + token + '/' + Date.now() + '.jpg';
+      const up = await sb.storage.from('fotos').upload(caminho, blobFoto, { contentType: 'image/jpeg', upsert: false });
+      if(up.error) throw up.error;
+      const reg = await sb.rpc('registrar_foto_celular', { p_token: token, p_caminho: caminho });
+      if(reg.error) throw reg.error;
+      mostrar('telaOk');
+    }catch(err){
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Enviar foto';
+      const msg = (err && err.message) || '';
+      if(/expirado|utilizado|row-level|policy/i.test(msg)) erro('Este QR code expirou ou já foi usado. Gere um novo no computador da portaria.');
+      else alert('Não foi possível enviar a foto. Verifique a internet do celular e tente novamente.');
+    }
+  });
+
+  iniciar();
+})();
+</script>
+</body>
+</html>

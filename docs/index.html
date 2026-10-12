@@ -1,0 +1,2269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Central Park - Controle de Encomendas</title>
+<style>
+
+  :root{
+    /* cores do logo */
+    --grafite:#1c1a17;
+    --grafite-2:#2a2723;
+    --marca:#8bb254;
+    --marca-escuro:#4d7330;
+    --marca-suave:#eef4e4;
+    --creme:#f6f2ea;
+    /* nomes antigos mantidos (usados em estilos inline do sistema) */
+    --azul:#1c1a17;
+    --azul-claro:#2a2723;
+    --verde:#1e7b4f;
+    --vermelho:#b3261e;
+    --laranja:#a35a00;
+    --cinza-bg:#f6f2ea;
+    --cinza-borda:#e6e0d4;
+    --branco:#fff;
+    --texto-2:#6b665c;
+    --sombra:0 1px 2px rgba(28,26,23,.06), 0 4px 14px rgba(28,26,23,.06);
+    --raio:12px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--creme);
+    color:var(--grafite);
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    background:var(--grafite);
+    color:#f3eee2;
+    padding:16px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  header h1{
+    margin:0;
+    font-size:1.3rem;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+  header .marca{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  header .logo{
+    height:80px;
+    width:auto;
+    display:block;
+    flex-shrink:0;
+    color:#f3eee2;
+  }
+  @media (max-width:600px){ header .logo{height:66px;} }
+  header .marca .divisor{width:1px;align-self:stretch;background:rgba(243,238,226,.18);}
+  header .sub{
+    font-size:.85rem;
+    color:#c9c2b4;
+    margin-top:2px;
+  }
+  nav{
+    display:flex;
+    background:var(--grafite-2);
+    flex-wrap:wrap;
+    padding:0 12px;
+    border-bottom:1px solid rgba(0,0,0,.2);
+  }
+  nav button{
+    flex:1;
+    min-width:120px;
+    padding:14px 10px 12px;
+    background:transparent;
+    border:none;
+    color:#c9c2b4;
+    font-size:.92rem;
+    font-weight:500;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    transition:color .15s, border-color .15s;
+  }
+  nav button:hover{color:#fff;}
+  nav button.active{
+    color:#fff;
+    border-bottom:3px solid var(--marca);
+    font-weight:650;
+  }
+  main{
+    max-width:920px;
+    margin:0 auto;
+    padding:24px 16px 60px;
+  }
+  .card{
+    background:var(--branco);
+    border:1px solid var(--cinza-borda);
+    border-radius:var(--raio);
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:var(--sombra);
+  }
+  .card h2{
+    margin-top:0;
+    margin-bottom:14px;
+    font-size:1.08rem;
+    font-weight:700;
+    color:var(--grafite);
+    display:flex;align-items:center;gap:10px;
+  }
+  .card h2::before{
+    content:"";width:4px;height:18px;border-radius:2px;background:var(--marca);flex-shrink:0;
+  }
+  label{
+    display:block;
+    font-size:.82rem;
+    font-weight:600;
+    margin:12px 0 5px;
+    color:#3d3a34;
+  }
+  input[type=text], input[type=date], input[type=password], select{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #d9d2c4;
+    border-radius:8px;
+    font-size:1rem;
+    background:#fff;
+    color:var(--grafite);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus, input[type=date]:focus, input[type=password]:focus, select:focus{
+    outline:none;
+    border-color:var(--marca-escuro);
+    box-shadow:0 0 0 3px rgba(139,178,84,.28);
+  }
+  input[type=file]{
+    width:100%;
+    padding:8px 0;
+  }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media (max-width:600px){
+    .row2{grid-template-columns:1fr;}
+  }
+  .btn{
+    display:inline-block;
+    padding:10px 18px;
+    border:1px solid transparent;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:.92rem;
+    font-weight:600;
+    transition:background .15s, border-color .15s, box-shadow .15s, transform .05s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(139,178,84,.4);}
+  .btn-primary{background:var(--marca-escuro);color:#fff;}
+  .btn-primary:hover{background:#3f6026;}
+  .btn-verde{background:var(--verde);color:#fff;}
+  .btn-verde:hover{background:#17653f;}
+  .btn-vermelho{background:#fff;color:var(--vermelho);border-color:#ecc9c6;}
+  .btn-vermelho:hover{background:var(--vermelho);color:#fff;border-color:var(--vermelho);}
+  .btn-outline{background:#fff;border:1px solid #d9d2c4;color:var(--grafite);}
+  .btn-outline:hover{border-color:var(--marca-escuro);background:var(--marca-suave);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;}
+  .search-bar{margin-bottom:16px;}
+  .pkg{
+    display:flex;
+    gap:14px;
+    border:1px solid var(--cinza-borda);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:10px;
+    align-items:flex-start;
+    background:#fff;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .pkg:hover{border-color:#d4ccbd;box-shadow:0 2px 10px rgba(28,26,23,.06);}
+  .pkg img{
+    width:68px;
+    height:68px;
+    object-fit:cover;
+    border-radius:8px;
+    background:#eee;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .pkg .no-photo{
+    width:68px;height:68px;
+    border-radius:8px;
+    background:#f1ede4;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.65rem;color:#8a8478;
+    text-align:center;
+    flex-shrink:0;
+  }
+  .pkg .info{flex:1;min-width:0;}
+  .pkg .info .apto{font-weight:750;font-size:1.05rem;color:var(--grafite);}
+  .pkg .info .morador{font-weight:600;}
+  .pkg .info .meta{font-size:.82rem;color:var(--texto-2);margin-top:3px;}
+  .pkg .info .badge{
+    display:inline-block;
+    font-size:.68rem;
+    font-weight:700;
+    letter-spacing:.04em;
+    padding:3px 9px;
+    border-radius:999px;
+    margin-top:8px;
+  }
+  .badge-pendente{background:#fdf0d8;color:var(--laranja);}
+  .badge-entregue{background:#e3f1e8;color:var(--verde);}
+  .pkg .pkg-actions{display:flex;flex-direction:column;gap:6px;}
+  .pkg .pkg-actions button{white-space:nowrap;font-size:.82rem;padding:7px 12px;}
+  .empty{color:#8a8478;text-align:center;padding:30px 10px;font-size:.95rem;}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+  @media (max-width:600px){.stats{grid-template-columns:1fr 1fr;}}
+  .stat{
+    background:#fff;border:1px solid var(--cinza-borda);border-radius:var(--raio);
+    padding:18px 16px;text-align:left;box-shadow:var(--sombra);
+    border-top:4px solid var(--marca);
+  }
+  .stat .num{font-size:2rem;font-weight:800;color:var(--grafite);line-height:1.1;}
+  .stat .label{font-size:.8rem;color:var(--texto-2);margin-top:4px;}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--cinza-borda);}
+  th{color:var(--texto-2);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;}
+  tbody tr:hover{background:#faf8f3;}
+  .hidden{display:none !important;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--grafite);color:#fff;padding:12px 20px;border-radius:10px;
+    font-size:.9rem;opacity:0;transition:opacity .3s;pointer-events:none;
+    z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);
+    border-left:4px solid var(--marca);
+  }
+  .toast.show{opacity:1;}
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(28,26,23,.6);
+    display:flex;align-items:center;justify-content:center;
+    z-index:1000;padding:16px;
+    backdrop-filter:blur(2px);
+  }
+  .modal-overlay img{max-width:90vw;max-height:85vh;border-radius:10px;}
+  small.hint{display:block;color:#8a8478;font-size:.78rem;margin-top:5px;line-height:1.4;}
+  .hint{color:var(--texto-2);font-size:.85rem;}
+  .footer-note{text-align:center;color:#8a8478;font-size:.78rem;margin-top:30px;padding-bottom:20px;}
+  .foto-opcoes{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
+  .camera-modal{
+    background:var(--grafite);border-radius:14px;padding:16px;
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    max-width:520px;width:100%;
+  }
+  .camera-modal video, .camera-modal canvas{
+    width:100%;max-height:60vh;border-radius:10px;background:#000;
+  }
+  .camera-modal .camera-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .camera-modal p.erro{color:#ffb4b4;font-size:.85rem;text-align:center;margin:0;}
+  .aviso-card{
+    background:#fff;border-radius:14px;padding:22px;
+    display:flex;flex-direction:column;gap:14px;
+    max-width:480px;width:100%;max-height:85vh;overflow-y:auto;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+  }
+  .aviso-card h2{margin:0;color:var(--grafite);font-size:1.1rem;}
+  .aviso-item{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    border:1px solid var(--cinza-borda);border-radius:10px;padding:10px 12px;
+    flex-wrap:wrap;
+  }
+  .aviso-item .nome{font-weight:600;}
+  .aviso-item .tel{font-size:.8rem;color:var(--texto-2);}
+  .aviso-item .botoes{display:flex;gap:6px;flex-wrap:wrap;}
+  .aviso-item .botoes button{font-size:.82rem;padding:8px 10px;}
+  .camera-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .btn-outline.active{background:var(--grafite);color:#fff;border-color:var(--grafite);}
+  .filtro-status{margin-right:6px;margin-bottom:8px;border-radius:999px;padding:7px 16px;}
+  .linha-morador{position:relative;}
+  .linha-morador .btnRemoverLinha{
+    position:absolute;top:0;right:0;background:none;border:none;
+    color:var(--vermelho);font-size:.8rem;cursor:pointer;font-weight:600;
+  }
+  .pkg .no-photo.clicavel{cursor:pointer;border:1px dashed #c9c1b1;}
+  .pkg .no-photo.clicavel:hover{background:var(--marca-suave);color:var(--marca-escuro);border-color:var(--marca-escuro);}
+  .badge-semfoto{background:#efebe3;color:#6b665c;margin-left:4px;}
+  .zona-soltar{
+    border:2px dashed #d9d2c4;border-radius:10px;padding:18px;
+    text-align:center;font-size:.85rem;color:#555;background:#faf8f3;
+  }
+  .zona-soltar.arrastando{border-color:var(--marca-escuro);background:var(--marca-suave);}
+  .foto-atual img{display:block;max-width:100%;max-height:40vh;margin:0 auto;border-radius:10px;}
+  .filtro-semfoto{
+    display:inline-flex;align-items:center;gap:6px;margin:0 0 8px 6px;
+    font-size:.85rem;cursor:pointer;
+  }
+  #statusBackupAuto{color:var(--verde) !important;background:#e3f1e8 !important;}
+
+  .login-overlay{
+    position:fixed;inset:0;z-index:2000;background:var(--grafite);
+    display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;
+  }
+  .login-card{
+    background:#fff;border-radius:16px;padding:28px 24px;max-width:380px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  .login-card .logo-login{display:block;height:110px;width:auto;margin:0 auto 14px;color:var(--grafite);}
+  .login-card h1{font-size:1.15rem;text-align:center;margin:0;}
+  .login-card .sub-login{text-align:center;color:var(--texto-2);font-size:.85rem;margin:4px 0 8px;}
+  .erro-login{color:var(--vermelho);font-size:.88rem;margin:12px 0 0;}
+  .lado-direito{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  .info-turno{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:.88rem;}
+  .btn-header{
+    background:transparent;border:1px solid rgba(243,238,226,.35);color:#f3eee2;
+    border-radius:999px;padding:5px 12px;font-size:.8rem;cursor:pointer;
+  }
+  .btn-header:hover{border-color:var(--marca);color:#fff;}
+  @media (max-width:600px){ .lado-direito{align-items:flex-start;} .info-turno{justify-content:flex-start;} }
+  .aviso-conexao{background:#fdf0d8;color:#7a4300;text-align:center;padding:8px 12px;font-size:.88rem;font-weight:600;}
+  .pkg .info .autoria{color:#8a8478;font-size:.78rem;}
+  .qr-area{text-align:center;}
+  .qr-area .qr-imagem svg{width:230px;height:230px;max-width:100%;display:block;margin:0 auto;}
+  .qr-area .qr-contagem{font-size:.85rem;color:var(--texto-2);margin-top:6px;}
+  .badge-papel-admin{background:var(--marca-suave);color:var(--marca-escuro);margin-left:4px;}
+  .badge-inativo{background:#f6dcda;color:var(--vermelho);margin-left:4px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marca">
+    <svg class="logo" viewBox="110 45 780 660" role="img" aria-label="Macaé Central Park" xmlns="http://www.w3.org/2000/svg">
+      <g fill="currentColor" font-family="'Liberation Sans',Arial,Helvetica,sans-serif" text-anchor="middle">
+        <text x="504.5" y="135" font-size="88" font-weight="700" letter-spacing="9">MACAÉ</text>
+        <text x="508" y="585" font-size="38" letter-spacing="16">CENTRAL</text>
+        <text x="504.5" y="692" font-size="88" font-weight="700" letter-spacing="9">PARK</text>
+      </g>
+      <g stroke="currentColor" fill="none">
+        <line x1="120" y1="185" x2="880" y2="185" stroke-width="5"/>
+        <line x1="120" y1="520" x2="880" y2="520" stroke-width="5"/>
+        <rect x="174.5" y="224.5" width="582" height="247" stroke-width="9"/>
+        <rect x="299.5" y="269.5" width="332" height="157" stroke-width="9"/>
+        <line x1="130" y1="347.5" x2="295" y2="347.5" stroke-width="9"/>
+        <line x1="636" y1="347.5" x2="801" y2="347.5" stroke-width="9"/>
+      </g>
+      <rect x="319" y="289" width="293" height="118" fill="#8bb254"/>
+    </svg>
+    <div class="divisor"></div>
+    <div>
+      <h1>Condomínio Central Park</h1>
+      <div class="sub">Controle de Encomendas da Portaria</div>
+    </div>
+  </div>
+  <div class="lado-direito">
+    <div class="sub" id="dataAgora"></div>
+    <div id="infoTurno" class="info-turno hidden">
+      <span>👤 <strong id="nomePorteiro"></strong></span>
+      <span class="sub">turno desde <span id="inicioTurno"></span></span>
+      <button type="button" class="btn-header" id="btnEncerrarTurno">Encerrar turno</button>
+    </div>
+  </div>
+</header>
+
+<div id="avisoConexao" class="aviso-conexao hidden">⚠️ Sem conexão com a internet. Cadastros, baixas e fotos não serão salvos até a conexão voltar.</div>
+
+<nav>
+  <button class="tab-btn active" data-tab="cadastrar">+ Nova Encomenda</button>
+  <button class="tab-btn" data-tab="pendentes">Encomendas Pendentes</button>
+  <button class="tab-btn" data-tab="entregues">Histórico de entregas</button>
+  <button class="tab-btn" data-tab="moradores">Cadastro de Moradores</button>
+  <button class="tab-btn" data-tab="relatorio">Relatório</button>
+  <button class="tab-btn hidden" data-tab="admin" id="tabAdmin">Administração</button>
+</nav>
+
+<main>
+
+  <!-- CADASTRAR -->
+  <section id="tab-cadastrar" class="tab-content">
+    <div class="card">
+      <h2>Registrar encomenda recebida</h2>
+      <form id="formCadastro">
+        <div class="row2">
+          <div>
+            <label for="apto">Apartamento *</label>
+            <input type="text" id="apto" placeholder="Ex: 302" required>
+          </div>
+          <div>
+            <label for="morador">Nome do morador (se souber)</label>
+            <input type="text" id="morador" placeholder="Ex: João Silva">
+          </div>
+        </div>
+        <div id="infoMoradoresApto" class="hint hidden" style="margin:-4px 0 10px;"></div>
+        <div class="row2">
+          <div>
+            <label for="transportadora">Transportadora / Remetente</label>
+            <input type="text" id="transportadora" placeholder="Ex: Correios, Amazon, iFood...">
+          </div>
+          <div>
+            <label for="dataChegada">Data de chegada</label>
+            <input type="date" id="dataChegada">
+          </div>
+        </div>
+        <label for="telefone">WhatsApp avulso (se a pessoa não estiver cadastrada)</label>
+        <input type="text" id="telefone" placeholder="Ex: (11) 91234-5678">
+        <small class="hint">Moradores já cadastrados na aba "Moradores" são avisados automaticamente. Use este campo só para um contato extra, não cadastrado.</small>
+        <label for="observacao">Observação (opcional)</label>
+        <input type="text" id="observacao" placeholder="Ex: caixa grande, volume frágil...">
+
+        <label for="foto">Foto do pacote</label>
+        <div class="foto-opcoes">
+          <input type="file" id="foto" accept="image/*" capture="environment" style="width:auto;flex:1;min-width:180px;">
+          <button type="button" class="btn btn-outline" id="btnAbrirCamera">📷 Tirar foto pela câmera</button>
+        </div>
+        <small class="hint">Anexe um arquivo de imagem, use a câmera do computador ou copie a foto (ex.: no WhatsApp Desktop, botão direito → Copiar) e pressione <strong>Ctrl+V</strong> nesta tela. Para tirar a foto pelo celular, cadastre a encomenda e use o botão "📷 Foto" → "Celular (QR code)".</small>
+        <div id="previewFoto" style="margin-top:10px;"></div>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary" id="btnCadastrar">Cadastrar encomenda</button>
+          <button type="reset" class="btn btn-outline" id="btnLimparForm">Limpar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- MORADORES -->
+  <section id="tab-moradores" class="tab-content hidden">
+    <div class="card">
+      <h2>Cadastrar moradores do apartamento</h2>
+      <form id="formMoradores">
+        <label for="moradorApto">Apartamento *</label>
+        <input type="text" id="moradorApto" placeholder="Ex: 302" required>
+
+        <div id="linhasMoradores">
+          <div class="linha-morador row2">
+            <div>
+              <label>Nome</label>
+              <input type="text" class="nomeMorador" placeholder="Ex: João Silva">
+            </div>
+            <div>
+              <label>WhatsApp (com DDD)</label>
+              <input type="text" class="telMorador" placeholder="Ex: (11) 91234-5678">
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-outline" id="btnAddLinhaMorador">+ Adicionar outro morador deste apto</button>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Salvar moradores</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Moradores cadastrados</h2>
+      <input type="text" class="search-bar" id="buscaMoradores" placeholder="Buscar por apartamento ou nome...">
+      <div id="listaMoradores"></div>
+    </div>
+  </section>
+
+  <!-- PENDENTES -->
+  <section id="tab-pendentes" class="tab-content hidden">
+    <div class="card">
+      <h2>Encomendas pendentes</h2>
+      <input type="text" class="search-bar" id="buscaPendentes" placeholder="Buscar por apartamento ou nome do morador...">
+      <div id="listaPendentes"></div>
+    </div>
+  </section>
+
+  <!-- ENTREGUES / HISTÓRICO -->
+  <section id="tab-entregues" class="tab-content hidden">
+    <div class="card">
+      <h2>Histórico de entregas</h2>
+      <input type="text" class="search-bar" id="buscaEntregues" placeholder="Buscar por apartamento ou nome do morador...">
+      <div id="listaEntregues"></div>
+    </div>
+  </section>
+
+  <!-- RELATORIO -->
+  <section id="tab-relatorio" class="tab-content hidden">
+    <div class="stats">
+      <div class="stat"><div class="num" id="statPendentes">0</div><div class="label">Pendentes agora</div></div>
+      <div class="stat"><div class="num" id="statHoje">0</div><div class="label">Entregues hoje</div></div>
+      <div class="stat"><div class="num" id="statTotal">0</div><div class="label">Total cadastrado</div></div>
+    </div>
+    <div class="card">
+      <h2>Consulta de encomendas</h2>
+      <div style="margin-bottom:10px;">
+        <button class="btn btn-outline filtro-status active" data-status="todas">Todas</button>
+        <button class="btn btn-outline filtro-status" data-status="pendente">Pendentes</button>
+        <button class="btn btn-outline filtro-status" data-status="entregue">Entregues</button>
+        <label class="filtro-semfoto"><input type="checkbox" id="filtroSemFoto"> Somente sem foto</label>
+      </div>
+      <div class="row2">
+        <div>
+          <label for="filtroApto">Apartamento ou morador</label>
+          <input type="text" id="filtroApto" placeholder="Ex: 302 ou João">
+        </div>
+        <div>
+          <label for="filtroTransportadora">Transportadora / remetente</label>
+          <input type="text" id="filtroTransportadora" placeholder="Ex: Correios">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label for="filtroDataDe">Data de chegada — de</label>
+          <input type="date" id="filtroDataDe">
+        </div>
+        <div>
+          <label for="filtroDataAte">Data de chegada — até</label>
+          <input type="date" id="filtroDataAte">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" id="btnLimparFiltros">Limpar filtros</button>
+      </div>
+      <div id="resultadoConsulta" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Pendências por apartamento</h2>
+      <table id="tabelaPorApto">
+        <thead><tr><th>Apartamento</th><th>Qtd. pendente</th><th>Encomenda mais antiga</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="semPendenciasMsg" class="empty hidden">Nenhuma encomenda pendente. Tudo entregue!</div>
+    </div>
+  </section>
+
+  <!-- ADMINISTRAÇÃO (só administradores) -->
+  <section id="tab-admin" class="tab-content hidden">
+    <div class="card">
+      <h2>Usuários (porteiros)</h2>
+      <form id="formUsuario">
+        <div class="row2">
+          <div>
+            <label for="novoNome">Nome</label>
+            <input type="text" id="novoNome" placeholder="Ex: João Pereira">
+          </div>
+          <div>
+            <label for="novoUsuario">Usuário (para entrar no sistema)</label>
+            <input type="text" id="novoUsuario" placeholder="Ex: joao" autocapitalize="none" spellcheck="false">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label for="novaSenha">Senha (mínimo 6 caracteres)</label>
+            <input type="password" id="novaSenha" autocomplete="new-password">
+          </div>
+          <div>
+            <label for="novoPapel">Perfil</label>
+            <select id="novoPapel">
+              <option value="porteiro">Porteiro</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+        </div>
+        <small class="hint">Não é preciso e-mail. O porteiro entra só com o usuário e a senha.</small>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary" id="btnCriarUsuario">Criar usuário</button>
+        </div>
+      </form>
+      <div id="listaUsuarios" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Turnos (entrada e saída)</h2>
+      <div class="row2">
+        <div>
+          <label for="turnoDe">De</label>
+          <input type="date" id="turnoDe">
+        </div>
+        <div>
+          <label for="turnoAte">Até</label>
+          <input type="date" id="turnoAte">
+        </div>
+      </div>
+      <div id="listaTurnos" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Banco de dados</h2>
+      <p style="font-size:.88rem;color:#555;">Os dados ficam na nuvem (Supabase). O backup gera um arquivo .json com encomendas, moradores e usuários (as fotos ficam no armazenamento do Supabase e não vão no arquivo).</p>
+      <p id="statusBackupAuto" style="font-size:.82rem;border-radius:6px;padding:8px 10px;"></p>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnExportar">📦 Gerar backup (.json)</button>
+        <label class="btn btn-outline" style="cursor:pointer;margin:0;">
+          Importar backup da versão local
+          <input type="file" id="inputImportar" accept="application/json,.json" class="hidden">
+        </label>
+      </div>
+      <p id="progressoImportacao" class="hint hidden" style="margin-top:12px;"></p>
+    </div>
+  </section>
+
+</main>
+
+<div class="footer-note">Central Park · Sistema de controle de encomendas</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="modalFoto" class="modal-overlay hidden">
+  <div class="aviso-card">
+    <h2 id="fotoTitulo">Foto da encomenda</h2>
+    <div id="fotoAtual" class="foto-atual"></div>
+    <div id="fotoOpcoes">
+      <div id="zonaSoltarFoto" class="zona-soltar">
+        <strong>Arraste a imagem para cá</strong><br>
+        ou copie a foto (no WhatsApp Desktop: botão direito na foto → Copiar) e pressione <strong>Ctrl+V</strong>
+      </div>
+      <div class="foto-opcoes" style="margin-top:12px;">
+        <button type="button" class="btn btn-primary" id="btnFotoCelular">📱 Celular (QR code)</button>
+        <button type="button" class="btn btn-outline" id="btnFotoCamera">📷 Câmera do computador</button>
+        <label class="btn btn-outline" style="cursor:pointer;margin:0;">
+          📁 Escolher arquivo
+          <input type="file" id="inputFotoEncomenda" accept="image/*" class="hidden">
+        </label>
+        <button type="button" class="btn btn-vermelho hidden" id="btnRemoverFoto">Remover foto</button>
+      </div>
+    </div>
+    <div id="qrArea" class="qr-area hidden">
+      <p style="margin:0 0 8px;">Aponte a câmera do celular para o código:</p>
+      <div id="qrImagem" class="qr-imagem"></div>
+      <div id="qrContagem" class="qr-contagem"></div>
+      <p class="hint" style="margin:8px 0 0;">A foto aparece aqui sozinha assim que for enviada pelo celular.</p>
+      <div class="actions" style="justify-content:center;">
+        <button type="button" class="btn btn-outline" id="btnCancelarQr">Voltar</button>
+      </div>
+    </div>
+    <div class="camera-actions">
+      <button type="button" class="btn btn-outline" id="btnFecharFoto">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalCamera" class="modal-overlay hidden">
+  <div class="camera-modal">
+    <video id="videoCamera" autoplay playsinline></video>
+    <canvas id="canvasCamera" class="hidden"></canvas>
+    <p class="erro hidden" id="erroCamera"></p>
+    <div class="camera-actions">
+      <button type="button" class="btn btn-verde" id="btnCapturarFoto">Capturar foto</button>
+      <button type="button" class="btn btn-outline" id="btnCancelarCamera">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalAviso" class="modal-overlay hidden">
+  <div class="aviso-card">
+    <h2 id="avisoTitulo">Avisar moradores</h2>
+    <div id="avisoLista"></div>
+    <p id="avisoVazio" class="empty hidden" style="padding:0;">Nenhum morador cadastrado para este apartamento. Cadastre na aba "Moradores" para avisos automáticos da próxima vez.</p>
+    <div class="camera-actions">
+      <button type="button" class="btn btn-outline" id="btnFecharAviso">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="telaLogin" class="login-overlay">
+  <form class="login-card" id="formLogin">
+    <svg class="logo-login" viewBox="110 45 780 660" role="img" aria-label="Macaé Central Park" xmlns="http://www.w3.org/2000/svg">
+      <g fill="currentColor" font-family="'Liberation Sans',Arial,Helvetica,sans-serif" text-anchor="middle">
+        <text x="504.5" y="135" font-size="88" font-weight="700" letter-spacing="9">MACAÉ</text>
+        <text x="508" y="585" font-size="38" letter-spacing="16">CENTRAL</text>
+        <text x="504.5" y="692" font-size="88" font-weight="700" letter-spacing="9">PARK</text>
+      </g>
+      <g stroke="currentColor" fill="none">
+        <line x1="120" y1="185" x2="880" y2="185" stroke-width="5"/>
+        <line x1="120" y1="520" x2="880" y2="520" stroke-width="5"/>
+        <rect x="174.5" y="224.5" width="582" height="247" stroke-width="9"/>
+        <rect x="299.5" y="269.5" width="332" height="157" stroke-width="9"/>
+        <line x1="130" y1="347.5" x2="295" y2="347.5" stroke-width="9"/>
+        <line x1="636" y1="347.5" x2="801" y2="347.5" stroke-width="9"/>
+      </g>
+      <rect x="319" y="289" width="293" height="118" fill="#8bb254"/>
+    </svg>
+    <h1>Controle de Encomendas</h1>
+    <p class="sub-login">Portaria · Condomínio Central Park</p>
+    <label for="loginUsuario">Usuário</label>
+    <input type="text" id="loginUsuario" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <label for="loginSenha">Senha</label>
+    <input type="password" id="loginSenha" autocomplete="current-password">
+    <p id="loginErro" class="erro-login hidden"></p>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" id="btnEntrar" style="width:100%;">Entrar e iniciar turno</button>
+    </div>
+    <small class="hint" style="text-align:center;">Esqueceu a senha? Fale com o administrador.</small>
+  </form>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function(){
+  const cfg = window.CONFIG || {};
+  const BUCKET = 'fotos';
+  const MAX_LADO_FOTO = 1024;
+  const QUALIDADE_FOTO = 0.75;
+  const KEY_ULTIMO_BACKUP_AUTO = 'centralpark_online_ultimo_backup_auto';
+
+  function mostrarLogin(msg){
+    document.getElementById('telaLogin').classList.remove('hidden');
+    const el = document.getElementById('loginErro');
+    el.textContent = msg || '';
+    el.classList.toggle('hidden', !msg);
+    const btn = document.getElementById('btnEntrar');
+    btn.disabled = false;
+    btn.textContent = 'Entrar e iniciar turno';
+  }
+
+  if(!window.supabase || !cfg.SUPABASE_URL || /SEU-PROJETO/.test(cfg.SUPABASE_URL)){
+    mostrarLogin('Não foi possível carregar o sistema. Verifique a internet (ou a configuração em config.js).');
+    document.getElementById('btnEntrar').disabled = true;
+    return;
+  }
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+
+  // ---------- estado ----------
+  let dados = [];        // encomendas (não excluídas)
+  let moradores = [];
+  let porteiros = {};    // id -> {id, usuario, nome, papel, ativo}
+  let eu = null;         // porteiro logado
+  let turnoId = null;
+  let inicioTurno = null;
+  let fotoTemp = null;   // dataURL da foto selecionada no formulário
+  let appIniciado = false;
+  const urlFotos = {};   // caminho no storage -> { url, exp }
+
+  // ---------- utilidades ----------
+  function hojeISO(){
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,10);
+  }
+  function dataLocalISO(isoDateTime){
+    if(!isoDateTime) return '';
+    const d = new Date(isoDateTime);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0,10);
+  }
+  function formatarDataBR(iso){
+    if(!iso) return '-';
+    const [y,m,d] = iso.split('-');
+    return d+'/'+m+'/'+y;
+  }
+  function formatarDataHoraBR(isoDateTime){
+    if(!isoDateTime) return '-';
+    const dt = new Date(isoDateTime);
+    return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }
+  function formatarHora(isoDateTime){
+    return isoDateTime ? new Date(isoDateTime).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '-';
+  }
+  let toastTimer = null;
+  function toast(msg, ms){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), ms || 2200);
+  }
+  function falha(msg, err){
+    console.error(msg, err);
+    toast(msg + (navigator.onLine ? '' : ' Sem conexão com a internet.'), 4500);
+  }
+  function normaliza(str){
+    return (str||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  }
+  function normalizaUsuario(str){
+    return normaliza(str).trim().replace(/\s+/g,'.').replace(/[^a-z0-9._-]/g,'');
+  }
+  function emailDoUsuario(usuario){
+    return usuario + '@' + (cfg.DOMINIO_USUARIOS || 'portaria.local');
+  }
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function uuid(){
+    if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+    const h = Array.from(b, x => x.toString(16).padStart(2,'0')).join('');
+    return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);
+  }
+  function nomeDe(id){
+    return id && porteiros[id] ? porteiros[id].nome : '';
+  }
+
+  // ---------- conexão ----------
+  function atualizarAvisoConexao(){
+    document.getElementById('avisoConexao').classList.toggle('hidden', navigator.onLine);
+  }
+  window.addEventListener('online', atualizarAvisoConexao);
+  window.addEventListener('offline', atualizarAvisoConexao);
+  atualizarAvisoConexao();
+
+  // ---------- dados (Supabase) ----------
+  function deLinha(r){
+    const antigo = dados.find(p => p.id === r.id);
+    return {
+      id: r.id,
+      apto: r.apto,
+      morador: r.morador || '',
+      transportadora: r.transportadora || '',
+      dataChegada: r.data_chegada,
+      telefone: r.telefone || '',
+      observacao: r.observacao || '',
+      fotoPath: r.foto_path || null,
+      fotoOrigem: r.foto_origem || null,
+      fotoEnviadaPor: r.foto_enviada_por || null,
+      foto: (antigo && antigo.fotoPath === r.foto_path) ? antigo.foto : null,
+      status: r.status,
+      cadastradoEm: r.cadastrado_em,
+      cadastradoPor: r.cadastrado_por,
+      entregueEm: r.entregue_em,
+      entreguePor: r.entregue_por,
+      retiradoPor: r.retirado_por || ''
+    };
+  }
+  async function buscarTodas(montarConsulta){
+    const passo = 1000;
+    let de = 0, todas = [];
+    while(true){
+      const { data, error } = await montarConsulta().range(de, de + passo - 1);
+      if(error) throw error;
+      todas = todas.concat(data);
+      if(data.length < passo) break;
+      de += passo;
+    }
+    return todas;
+  }
+  async function carregarPorteiros(){
+    const { data, error } = await sb.from('porteiros').select('id, usuario, nome, papel, ativo').order('nome');
+    if(error) throw error;
+    porteiros = {};
+    data.forEach(p => { porteiros[p.id] = p; });
+  }
+  async function carregarMoradores(){
+    const linhas = await buscarTodas(() => sb.from('moradores').select('id, apto, nome, telefone').order('apto'));
+    moradores = linhas.map(m => ({ id: m.id, apto: m.apto, nome: m.nome || '', telefone: m.telefone || '' }));
+  }
+  async function carregarEncomendas(){
+    const linhas = await buscarTodas(() => sb.from('encomendas').select('*').is('excluido_em', null).order('cadastrado_em', { ascending: false }));
+    dados = linhas.map(deLinha);
+    await resolverFotos(dados);
+  }
+  function ordenar(){
+    dados.sort((a,b) => new Date(b.cadastradoEm) - new Date(a.cadastradoEm));
+  }
+  function upsertLocal(pkg){
+    const idx = dados.findIndex(p => p.id === pkg.id);
+    if(idx >= 0) dados[idx] = pkg; else { dados.push(pkg); ordenar(); }
+  }
+
+  // links temporários (assinados) para exibir as fotos do armazenamento privado
+  async function resolverFotos(lista){
+    const agora = Date.now();
+    const faltando = [...new Set(lista
+      .filter(p => p.fotoPath && !(urlFotos[p.fotoPath] && urlFotos[p.fotoPath].exp > agora))
+      .map(p => p.fotoPath))];
+    for(let i = 0; i < faltando.length; i += 100){
+      const lote = faltando.slice(i, i + 100);
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrls(lote, 60*60*24);
+      if(error){ console.error('Erro ao gerar links das fotos', error); continue; }
+      data.forEach(d => { if(d.signedUrl) urlFotos[d.path] = { url: d.signedUrl, exp: agora + 20*60*60*1000 }; });
+    }
+    lista.forEach(p => { p.foto = p.fotoPath && urlFotos[p.fotoPath] ? urlFotos[p.fotoPath].url : null; });
+  }
+  async function dataUrlParaBlob(dataUrl){
+    return (await fetch(dataUrl)).blob();
+  }
+  async function enviarFoto(encomendaId, dataUrl){
+    const blob = await dataUrlParaBlob(dataUrl);
+    const caminho = 'encomendas/' + encomendaId + '/' + Date.now() + '.jpg';
+    const { error } = await sb.storage.from(BUCKET).upload(caminho, blob, { contentType: 'image/jpeg', upsert: false });
+    if(error) throw error;
+    urlFotos[caminho] = { url: dataUrl, exp: Date.now() + 20*60*60*1000 };
+    return caminho;
+  }
+  function apagarArquivo(caminho){
+    if(!caminho) return;
+    sb.storage.from(BUCKET).remove([caminho]).then(r => { if(r.error) console.error('Erro ao apagar foto antiga', r.error); });
+  }
+  function renderTudo(){
+    renderPendentes();
+    renderEntregues();
+    renderConsulta();
+    renderRelatorio();
+  }
+
+  // ---------- login e turno ----------
+  document.getElementById('formLogin').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const usuario = normalizaUsuario(document.getElementById('loginUsuario').value);
+    const senha = document.getElementById('loginSenha').value;
+    if(!usuario || !senha){ mostrarLogin('Informe usuário e senha.'); return; }
+    const btn = document.getElementById('btnEntrar');
+    btn.disabled = true;
+    btn.textContent = 'Entrando…';
+    const { error } = await sb.auth.signInWithPassword({ email: emailDoUsuario(usuario), password: senha });
+    if(error){
+      mostrarLogin(/invalid/i.test(error.message) ? 'Usuário ou senha incorretos.' : 'Não foi possível entrar: ' + error.message);
+      return;
+    }
+    document.getElementById('loginSenha').value = '';
+    await iniciarApp(true);
+  });
+
+  async function prepararTurno(novoLogin){
+    const chave = 'centralpark_turno_' + eu.id;
+    let salvo = null;
+    try{ salvo = localStorage.getItem(chave); }catch(e){}
+    if(salvo && !novoLogin){
+      const { data } = await sb.from('turnos').select('id, inicio, fim').eq('id', salvo).maybeSingle();
+      if(data && !data.fim){ turnoId = data.id; inicioTurno = data.inicio; return; }
+    }
+    const { data, error } = await sb.rpc('iniciar_turno', { p_dispositivo: navigator.userAgent });
+    if(error) throw error;
+    turnoId = data;
+    inicioTurno = new Date().toISOString();
+    try{ localStorage.setItem(chave, turnoId); }catch(e){}
+  }
+
+  function pulsarTurno(){
+    if(!turnoId) return;
+    sb.rpc('pulsar_turno', { p_turno: turnoId }).then(r => { if(r.error) console.error('Erro ao registrar atividade do turno', r.error); });
+  }
+
+  document.getElementById('btnEncerrarTurno').addEventListener('click', async function(){
+    if(!eu) return;
+    if(!confirm('Encerrar o turno de ' + eu.nome + '? O próximo porteiro deverá entrar com o próprio usuário.')) return;
+    if(turnoId){
+      const r = await sb.rpc('encerrar_turno', { p_turno: turnoId });
+      if(r.error) console.error('Erro ao encerrar turno', r.error);
+    }
+    try{ localStorage.removeItem('centralpark_turno_' + eu.id); }catch(e){}
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  async function iniciarApp(novoLogin){
+    try{
+      const { data: { user } } = await sb.auth.getUser();
+      if(!user){ mostrarLogin(); return; }
+      await carregarPorteiros();
+      eu = porteiros[user.id];
+      if(!eu || !eu.ativo){
+        await sb.auth.signOut();
+        mostrarLogin('Este usuário não tem acesso ao sistema. Fale com o administrador.');
+        return;
+      }
+      await prepararTurno(novoLogin);
+      await Promise.all([carregarMoradores(), carregarEncomendas()]);
+    }catch(err){
+      console.error('Erro ao iniciar', err);
+      mostrarLogin('Não foi possível carregar o sistema. Verifique a internet e tente novamente.');
+      return;
+    }
+    document.getElementById('telaLogin').classList.add('hidden');
+    document.getElementById('nomePorteiro').textContent = eu.nome;
+    document.getElementById('inicioTurno').textContent = formatarDataHoraBR(inicioTurno);
+    document.getElementById('infoTurno').classList.remove('hidden');
+    document.getElementById('tabAdmin').classList.toggle('hidden', eu.papel !== 'admin');
+    renderTudo();
+    renderMoradores();
+    document.getElementById('apto').focus();
+
+    if(!appIniciado){
+      appIniciado = true;
+      assinarTempoReal();
+      setInterval(pulsarTurno, 5 * 60 * 1000);
+      setTimeout(verificarBackupAutomatico, 3000);
+      setInterval(verificarBackupAutomatico, 60 * 60 * 1000);
+      // renova os links das fotos antes de expirarem (sistema pode ficar aberto por dias)
+      setInterval(() => { resolverFotos(dados).then(renderTudo); }, 6 * 60 * 60 * 1000);
+    }
+  }
+
+  sb.auth.onAuthStateChange(function(evento){
+    if(evento === 'SIGNED_OUT' && appIniciado) location.reload();
+  });
+
+  // ---------- tempo real (outros computadores e o celular) ----------
+  function assinarTempoReal(){
+    sb.channel('portaria')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'encomendas' }, payload => {
+        const id = (payload.new && payload.new.id) || (payload.old && payload.old.id);
+        if(id) atualizarEncomendaDoServidor(id);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'moradores' }, () => {
+        carregarMoradores().then(() => { if(!editandoMoradorId) renderMoradores(); }).catch(err => console.error(err));
+      })
+      .subscribe();
+  }
+
+  async function atualizarEncomendaDoServidor(id){
+    const { data, error } = await sb.from('encomendas').select('*').eq('id', id).maybeSingle();
+    if(error){ console.error('Erro ao atualizar encomenda', error); return; }
+    const idx = dados.findIndex(p => p.id === id);
+    if(!data || data.excluido_em){
+      if(idx >= 0) dados.splice(idx, 1);
+    } else {
+      const novo = deLinha(data);
+      await resolverFotos([novo]);
+      upsertLocal(novo);
+      tratarFotoRecebidaDoCelular(novo);
+    }
+    renderTudo();
+    if(fotoEncomendaId === id) renderModalFoto();
+  }
+
+  // ---------- WhatsApp ----------
+  function formatarTelefoneWhats(tel){
+    let digitos = (tel||'').replace(/\D/g,'').replace(/^0+/,'');
+    if(digitos.length > 0 && digitos.length <= 11){ digitos = '55' + digitos; } // assume Brasil se não veio DDI
+    return digitos;
+  }
+  function montarMensagemChegada(pkg, nomeDestinatario){
+    const nome = nomeDestinatario || pkg.morador || ('morador(a) do apto ' + pkg.apto);
+    let msg = 'Olá, ' + nome + '! 📦 Chegou uma encomenda para você na portaria do Central Park.\n\n';
+    msg += 'Apartamento: ' + pkg.apto + '\n';
+    if(pkg.transportadora) msg += 'Transportadora/remetente: ' + pkg.transportadora + '\n';
+    msg += 'Recebida em: ' + formatarDataHoraBR(pkg.cadastradoEm) + '\n';
+    if(pkg.observacao) msg += 'Observação: ' + pkg.observacao + '\n';
+    msg += '\nAssim que possível, pode retirar na portaria. Obrigado!';
+    return msg;
+  }
+  function montarMensagemEntrega(pkg, nomeDestinatario){
+    const nome = nomeDestinatario || pkg.morador || ('morador(a) do apto ' + pkg.apto);
+    let msg = 'Olá, ' + nome + '! ✅ Confirmamos a retirada da sua encomenda na portaria do Central Park.\n\n';
+    msg += 'Apartamento: ' + pkg.apto + '\n';
+    if(pkg.transportadora) msg += 'Transportadora/remetente: ' + pkg.transportadora + '\n';
+    msg += 'Retirada em: ' + formatarDataHoraBR(pkg.entregueEm) + '\n';
+    if(pkg.retiradoPor) msg += 'Retirado por: ' + pkg.retiradoPor + '\n';
+    msg += '\nObrigado!';
+    return msg;
+  }
+  function montarMensagem(pkg, nomeDestinatario, tipo){
+    return tipo === 'entrega' ? montarMensagemEntrega(pkg, nomeDestinatario) : montarMensagemChegada(pkg, nomeDestinatario);
+  }
+  // link que tenta abrir direto no app do WhatsApp Desktop instalado no computador
+  function linkWhatsAppAppPara(pkg, destinatario, tipo){
+    const numero = formatarTelefoneWhats(destinatario.telefone);
+    if(!numero) return null;
+    return 'whatsapp://send?phone=' + numero + '&text=' + encodeURIComponent(montarMensagem(pkg, destinatario.nome, tipo));
+  }
+  // link alternativo pelo navegador (WhatsApp Web) — usado como reserva caso o app não abra
+  function linkWhatsAppWebPara(pkg, destinatario, tipo){
+    const numero = formatarTelefoneWhats(destinatario.telefone);
+    if(!numero) return null;
+    return 'https://wa.me/' + numero + '?text=' + encodeURIComponent(montarMensagem(pkg, destinatario.nome, tipo));
+  }
+  // reúne todos os contatos a avisar para um apto: moradores cadastrados + telefone avulso (se houver)
+  function construirDestinatarios(apto, telefoneAvulso, nomeFallback){
+    const alvo = normaliza(apto);
+    const lista = moradores.filter(m => normaliza(m.apto) === alvo && m.telefone)
+      .map(m => ({ nome: m.nome || nomeFallback, telefone: m.telefone }));
+    const vistos = new Set(lista.map(d => formatarTelefoneWhats(d.telefone)));
+    if(telefoneAvulso){
+      const num = formatarTelefoneWhats(telefoneAvulso);
+      if(num && !vistos.has(num)){
+        lista.push({ nome: nomeFallback, telefone: telefoneAvulso });
+      }
+    }
+    return lista;
+  }
+
+  // redimensiona/comprime a imagem antes de enviar
+  function comprimirImagem(file, callback, aoFalhar){
+    const reader = new FileReader();
+    reader.onerror = function(){ if(aoFalhar) aoFalhar(); };
+    reader.onload = function(e){
+      const img = new Image();
+      img.onerror = function(){ if(aoFalhar) aoFalhar(); };
+      img.onload = function(){
+        const maxLado = MAX_LADO_FOTO;
+        let w = img.width, h = img.height;
+        if(w > h && w > maxLado){ h = Math.round(h * maxLado / w); w = maxLado; }
+        else if(h > maxLado){ w = Math.round(w * maxLado / h); h = maxLado; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        callback(canvas.toDataURL('image/jpeg', QUALIDADE_FOTO));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ---------- navegação por abas ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(s=>s.classList.add('hidden'));
+      btn.classList.add('active');
+      document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
+      if(btn.dataset.tab === 'pendentes') renderPendentes();
+      if(btn.dataset.tab === 'entregues') renderEntregues();
+      if(btn.dataset.tab === 'moradores') renderMoradores();
+      if(btn.dataset.tab === 'relatorio'){ renderRelatorio(); renderConsulta(); }
+      if(btn.dataset.tab === 'admin'){ renderUsuarios(); renderTurnos(); renderStatusBackup(); }
+    });
+  });
+
+  // ---------- relógio no cabeçalho ----------
+  function atualizarRelogio(){
+    const el = document.getElementById('dataAgora');
+    el.textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'});
+  }
+  atualizarRelogio();
+  setInterval(atualizarRelogio, 60000);
+
+  // ---------- formulário de cadastro ----------
+  const form = document.getElementById('formCadastro');
+  document.getElementById('dataChegada').value = hojeISO();
+
+  // ao sair do campo "apto", mostra quais moradores já estão cadastrados (e avisa que serão notificados)
+  document.getElementById('apto').addEventListener('blur', function(){
+    const apto = this.value.trim();
+    const infoEl = document.getElementById('infoMoradoresApto');
+    if(!apto){ infoEl.classList.add('hidden'); return; }
+    const encontrados = moradores.filter(m => normaliza(m.apto) === normaliza(apto));
+    if(encontrados.length === 0){
+      infoEl.classList.add('hidden');
+      infoEl.textContent = '';
+      return;
+    }
+    const nomes = encontrados.map(m => m.nome || m.telefone || 'contato sem nome').join(', ');
+    infoEl.textContent = '📇 Moradores cadastrados neste apto (serão avisados automaticamente): ' + nomes;
+    infoEl.classList.remove('hidden');
+    const campoMorador = document.getElementById('morador');
+    if(!campoMorador.value.trim() && encontrados.length === 1 && encontrados[0].nome){
+      campoMorador.value = encontrados[0].nome;
+    }
+  });
+
+  document.getElementById('foto').addEventListener('change', function(e){
+    const file = e.target.files[0];
+    const preview = document.getElementById('previewFoto');
+    if(!file){ fotoTemp = null; preview.innerHTML=''; return; }
+    comprimirImagem(file, function(dataUrl){
+      fotoTemp = dataUrl;
+      preview.innerHTML = '<img src="'+dataUrl+'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;">';
+    }, () => toast('Não foi possível ler esta imagem.'));
+  });
+
+  // ---------- captura de foto pela câmera do computador ----------
+  let cameraStream = null;
+  let cameraDestino = null; // função que recebe a foto capturada (formulário ou encomenda já cadastrada)
+  const modalCamera = document.getElementById('modalCamera');
+  const videoCamera = document.getElementById('videoCamera');
+  const erroCamera = document.getElementById('erroCamera');
+
+  function usarFotoNoFormulario(dataUrl, mensagem){
+    fotoTemp = dataUrl;
+    document.getElementById('previewFoto').innerHTML = '<img src="'+dataUrl+'" style="width:90px;height:90px;object-fit:cover;border-radius:8px;">';
+    document.getElementById('foto').value = '';
+    toast(mensagem || 'Foto capturada.');
+  }
+
+  document.getElementById('btnAbrirCamera').addEventListener('click', function(){
+    abrirCamera(usarFotoNoFormulario);
+  });
+
+  async function abrirCamera(destino){
+    cameraDestino = destino;
+    erroCamera.classList.add('hidden');
+    modalCamera.classList.remove('hidden');
+    try{
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      videoCamera.srcObject = cameraStream;
+      videoCamera.classList.remove('hidden');
+    }catch(err){
+      videoCamera.classList.add('hidden');
+      erroCamera.textContent = 'Não foi possível acessar a câmera. Verifique se o navegador tem permissão de câmera para esta página (e se nenhum outro programa está usando a câmera agora). Você ainda pode anexar uma foto pelo botão de arquivo.';
+      erroCamera.classList.remove('hidden');
+      console.error('Erro ao acessar câmera', err);
+    }
+  }
+
+  function fecharCamera(){
+    if(cameraStream){
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+    }
+    cameraDestino = null;
+    videoCamera.srcObject = null;
+    modalCamera.classList.add('hidden');
+  }
+
+  document.getElementById('btnCancelarCamera').addEventListener('click', fecharCamera);
+  modalCamera.addEventListener('click', function(e){
+    if(e.target === modalCamera) fecharCamera();
+  });
+
+  document.getElementById('btnCapturarFoto').addEventListener('click', function(){
+    if(!cameraStream){ fecharCamera(); return; }
+    const canvas = document.getElementById('canvasCamera');
+    const maxLado = MAX_LADO_FOTO;
+    let w = videoCamera.videoWidth, h = videoCamera.videoHeight;
+    if(!w || !h){ return; }
+    if(w > h && w > maxLado){ h = Math.round(h * maxLado / w); w = maxLado; }
+    else if(h > maxLado){ w = Math.round(w * maxLado / h); h = maxLado; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(videoCamera, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL('image/jpeg', QUALIDADE_FOTO);
+    const destino = cameraDestino;
+    fecharCamera();
+    if(destino) destino(dataUrl);
+  });
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const apto = document.getElementById('apto').value.trim();
+    if(!apto){ toast('Informe o apartamento.'); return; }
+    const btn = document.getElementById('btnCadastrar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando…';
+    try{
+      const id = uuid();
+      const fotoPath = fotoTemp ? await enviarFoto(id, fotoTemp) : null;
+      const { data, error } = await sb.from('encomendas').insert({
+        id: id,
+        apto: apto,
+        morador: document.getElementById('morador').value.trim() || null,
+        transportadora: document.getElementById('transportadora').value.trim() || null,
+        data_chegada: document.getElementById('dataChegada').value || hojeISO(),
+        telefone: document.getElementById('telefone').value.trim() || null,
+        observacao: document.getElementById('observacao').value.trim() || null,
+        foto_path: fotoPath
+      }).select().single();
+      if(error){ apagarArquivo(fotoPath); throw error; }
+      const novo = deLinha(data);
+      await resolverFotos([novo]);
+      upsertLocal(novo);
+      toast('Encomenda cadastrada para o apto ' + apto + '.');
+
+      const destinatarios = construirDestinatarios(novo.apto, novo.telefone, novo.morador || ('morador(a) do apto ' + novo.apto));
+      if(destinatarios.length > 0){
+        abrirModalAviso(novo);
+      }
+
+      form.reset();
+      document.getElementById('dataChegada').value = hojeISO();
+      document.getElementById('previewFoto').innerHTML = '';
+      document.getElementById('infoMoradoresApto').classList.add('hidden');
+      fotoTemp = null;
+      document.getElementById('apto').focus();
+    }catch(err){
+      falha('Não foi possível cadastrar a encomenda. Tente novamente.', err);
+    }finally{
+      btn.disabled = false;
+      btn.textContent = 'Cadastrar encomenda';
+    }
+  });
+
+  // ---------- pedaços comuns das listas ----------
+  function htmlMiniatura(p){
+    if(p.fotoPath){
+      return p.foto
+        ? `<img src="${escapeHtml(p.foto)}" onclick="abrirFoto('${p.id}')" title="Clique para ampliar" loading="lazy">`
+        : `<div class="no-photo clicavel" onclick="abrirModalFoto('${p.id}')" title="Foto indisponível no momento">foto<br>indisponível</div>`;
+    }
+    return `<div class="no-photo clicavel" onclick="abrirModalFoto('${p.id}')" title="Adicionar foto">sem foto<br>+ adicionar</div>`;
+  }
+  function htmlBadgeSemFoto(p){
+    return p.fotoPath ? '' : '<span class="badge badge-semfoto">SEM FOTO</span>';
+  }
+  function htmlAutoria(p){
+    const partes = [];
+    const c = nomeDe(p.cadastradoPor);
+    if(c) partes.push('cadastro: ' + c);
+    const f = nomeDe(p.fotoEnviadaPor);
+    if(p.fotoPath && f) partes.push('foto: ' + f + (p.fotoOrigem === 'celular' ? ' (celular)' : ''));
+    const b = nomeDe(p.entreguePor);
+    if(p.status === 'entregue' && b) partes.push('baixa: ' + b);
+    return partes.length ? `<div class="meta autoria">👤 ${escapeHtml(partes.join(' · '))}</div>` : '';
+  }
+  const btnFotoHtml = id => `<button class="btn btn-outline" onclick="abrirModalFoto('${id}')">📷 Foto</button>`;
+
+  // ---------- render: pendentes ----------
+  function renderPendentes(){
+    const termo = normaliza(document.getElementById('buscaPendentes').value);
+    const lista = dados.filter(p => p.status === 'pendente' &&
+      (normaliza(p.apto).includes(termo) || normaliza(p.morador).includes(termo)));
+    const container = document.getElementById('listaPendentes');
+    if(lista.length === 0){
+      container.innerHTML = '<div class="empty">Nenhuma encomenda pendente encontrada.</div>';
+      return;
+    }
+    container.innerHTML = lista.map(p => `
+      <div class="pkg">
+        ${htmlMiniatura(p)}
+        <div class="info">
+          <div class="apto">Apto ${escapeHtml(p.apto)}</div>
+          ${p.morador ? `<div class="morador">${escapeHtml(p.morador)}</div>` : ''}
+          <div class="meta">${escapeHtml(p.transportadora || 'Remetente não informado')} · chegou em ${formatarDataHoraBR(p.cadastradoEm)}</div>
+          ${p.observacao ? `<div class="meta">Obs: ${escapeHtml(p.observacao)}</div>` : ''}
+          ${htmlAutoria(p)}
+          <span class="badge badge-pendente">PENDENTE</span>${htmlBadgeSemFoto(p)}
+        </div>
+        <div class="pkg-actions">
+          <button class="btn btn-outline" onclick="avisarWhatsApp('${p.id}')">📲 Avisar</button>
+          ${btnFotoHtml(p.id)}
+          <button class="btn btn-verde" onclick="darBaixa('${p.id}')">Dar baixa</button>
+          <button class="btn btn-vermelho" onclick="excluir('${p.id}')">Excluir</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---------- render: entregues ----------
+  function renderEntregues(){
+    const termo = normaliza(document.getElementById('buscaEntregues').value);
+    const lista = dados.filter(p => p.status === 'entregue' &&
+      (normaliza(p.apto).includes(termo) || normaliza(p.morador).includes(termo)))
+      .sort((a,b)=> new Date(b.entregueEm) - new Date(a.entregueEm));
+    const container = document.getElementById('listaEntregues');
+    if(lista.length === 0){
+      container.innerHTML = '<div class="empty">Nenhuma entrega encontrada.</div>';
+      return;
+    }
+    container.innerHTML = lista.map(p => `
+      <div class="pkg">
+        ${htmlMiniatura(p)}
+        <div class="info">
+          <div class="apto">Apto ${escapeHtml(p.apto)}</div>
+          ${p.morador ? `<div class="morador">${escapeHtml(p.morador)}</div>` : ''}
+          <div class="meta">${escapeHtml(p.transportadora || 'Remetente não informado')} · chegou em ${formatarDataHoraBR(p.cadastradoEm)}</div>
+          <div class="meta">Entregue em ${formatarDataHoraBR(p.entregueEm)}${p.retiradoPor ? ' · retirado por ' + escapeHtml(p.retiradoPor) : ''}</div>
+          ${htmlAutoria(p)}
+          <span class="badge badge-entregue">ENTREGUE</span>${htmlBadgeSemFoto(p)}
+        </div>
+        <div class="pkg-actions">
+          ${btnFotoHtml(p.id)}
+          <button class="btn btn-outline" onclick="reabrir('${p.id}')">Reabrir</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---------- moradores ----------
+  document.getElementById('btnAddLinhaMorador').addEventListener('click', function(){
+    const div = document.createElement('div');
+    div.className = 'linha-morador row2';
+    div.innerHTML = `
+      <button type="button" class="btnRemoverLinha" title="Remover esta linha">×</button>
+      <div><label>Nome</label><input type="text" class="nomeMorador" placeholder="Ex: Maria Silva"></div>
+      <div><label>WhatsApp (com DDD)</label><input type="text" class="telMorador" placeholder="Ex: (11) 98888-7777"></div>
+    `;
+    div.querySelector('.btnRemoverLinha').addEventListener('click', ()=> div.remove());
+    document.getElementById('linhasMoradores').appendChild(div);
+  });
+
+  document.getElementById('formMoradores').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const apto = document.getElementById('moradorApto').value.trim();
+    if(!apto){ toast('Informe o apartamento.'); return; }
+    const nomes = document.querySelectorAll('#linhasMoradores .nomeMorador');
+    const tels = document.querySelectorAll('#linhasMoradores .telMorador');
+    const linhas = [];
+    for(let i=0;i<nomes.length;i++){
+      const nome = nomes[i].value.trim();
+      const tel = tels[i].value.trim();
+      if(!nome && !tel) continue;
+      linhas.push({ apto: apto, nome: nome || null, telefone: tel || null });
+    }
+    if(linhas.length === 0){ toast('Preencha ao menos um morador (nome ou WhatsApp).'); return; }
+    const { data, error } = await sb.from('moradores').insert(linhas).select('id, apto, nome, telefone');
+    if(error){ falha('Não foi possível salvar os moradores.', error); return; }
+    data.forEach(m => moradores.push({ id: m.id, apto: m.apto, nome: m.nome || '', telefone: m.telefone || '' }));
+    toast(data.length + ' morador(es) cadastrado(s) para o apto ' + apto + '.');
+    this.reset();
+    document.getElementById('linhasMoradores').innerHTML = `
+      <div class="linha-morador row2">
+        <div><label>Nome</label><input type="text" class="nomeMorador" placeholder="Ex: João Silva"></div>
+        <div><label>WhatsApp (com DDD)</label><input type="text" class="telMorador" placeholder="Ex: (11) 91234-5678"></div>
+      </div>
+    `;
+    renderMoradores();
+  });
+
+  let editandoMoradorId = null;
+
+  function renderMoradores(){
+    const termo = normaliza(document.getElementById('buscaMoradores').value);
+    const filtrados = moradores.filter(m => normaliza(m.apto).includes(termo) || normaliza(m.nome).includes(termo));
+    const container = document.getElementById('listaMoradores');
+    if(filtrados.length === 0){
+      container.innerHTML = '<div class="empty">Nenhum morador cadastrado.</div>';
+      return;
+    }
+    const grupos = {};
+    filtrados.forEach(m=>{
+      const chave = normaliza(m.apto);
+      if(!grupos[chave]) grupos[chave] = { apto: m.apto, itens: [] };
+      grupos[chave].itens.push(m);
+    });
+    container.innerHTML = Object.keys(grupos).sort().map(chave=>{
+      const grupo = grupos[chave];
+      const linhas = grupo.itens.map(m => {
+        if(m.id === editandoMoradorId){
+          return `
+            <div class="pkg" style="flex-direction:column;align-items:stretch;">
+              <div class="row2">
+                <div>
+                  <label>Apartamento</label>
+                  <input type="text" id="editApto_${m.id}" value="${escapeHtml(m.apto)}">
+                </div>
+                <div>
+                  <label>Nome</label>
+                  <input type="text" id="editNome_${m.id}" value="${escapeHtml(m.nome)}">
+                </div>
+              </div>
+              <label>WhatsApp (com DDD)</label>
+              <input type="text" id="editTel_${m.id}" value="${escapeHtml(m.telefone)}">
+              <div class="actions">
+                <button class="btn btn-verde" onclick="salvarEdicaoMorador('${m.id}')">Salvar</button>
+                <button class="btn btn-outline" onclick="cancelarEdicaoMorador()">Cancelar</button>
+              </div>
+            </div>
+          `;
+        }
+        return `
+          <div class="pkg">
+            <div class="info">
+              <div class="morador">${escapeHtml(m.nome || '(sem nome)')}</div>
+              <div class="meta">${escapeHtml(m.telefone || 'sem WhatsApp cadastrado')}</div>
+            </div>
+            <div class="pkg-actions">
+              <button class="btn btn-outline" onclick="editarMorador('${m.id}')">Editar</button>
+              <button class="btn btn-vermelho" onclick="excluirMorador('${m.id}')">Excluir</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      return '<h3 style="color:var(--azul);margin:16px 0 8px;font-size:1rem;">Apto ' + escapeHtml(grupo.apto) + '</h3>' + linhas;
+    }).join('');
+  }
+
+  window.editarMorador = function(id){
+    editandoMoradorId = id;
+    renderMoradores();
+  };
+
+  window.cancelarEdicaoMorador = function(){
+    editandoMoradorId = null;
+    renderMoradores();
+  };
+
+  window.salvarEdicaoMorador = async function(id){
+    const m = moradores.find(x => x.id === id);
+    if(!m) return;
+    const apto = document.getElementById('editApto_' + id).value.trim();
+    const nome = document.getElementById('editNome_' + id).value.trim();
+    const tel = document.getElementById('editTel_' + id).value.trim();
+    if(!apto){ toast('Informe o apartamento.'); return; }
+    if(!nome && !tel){ toast('Preencha nome ou WhatsApp.'); return; }
+    const { error } = await sb.from('moradores').update({ apto: apto, nome: nome || null, telefone: tel || null }).eq('id', id);
+    if(error){ falha('Não foi possível atualizar o morador.', error); return; }
+    m.apto = apto;
+    m.nome = nome;
+    m.telefone = tel;
+    editandoMoradorId = null;
+    toast('Morador atualizado.');
+    renderMoradores();
+  };
+
+  window.excluirMorador = async function(id){
+    const m = moradores.find(x => x.id === id);
+    if(!m) return;
+    if(!confirm('Excluir "' + (m.nome || m.telefone) + '" do apto ' + m.apto + '?')) return;
+    const { error } = await sb.from('moradores').delete().eq('id', id);
+    if(error){ falha('Não foi possível excluir o morador.', error); return; }
+    moradores = moradores.filter(x => x.id !== id);
+    toast('Morador excluído.');
+    renderMoradores();
+  };
+
+  document.getElementById('buscaMoradores').addEventListener('input', renderMoradores);
+
+  // ---------- ações ----------
+  async function atualizarEncomenda(id, campos){
+    const { data, error } = await sb.from('encomendas').update(campos).eq('id', id).select().single();
+    if(error) throw error;
+    const novo = deLinha(data);
+    await resolverFotos([novo]);
+    upsertLocal(novo);
+    return novo;
+  }
+
+  window.darBaixa = async function(id){
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg) return;
+    const quem = prompt('Nome de quem retirou a encomenda (opcional):', pkg.morador || '');
+    if(quem === null) return; // cancelou
+    let atualizado;
+    try{
+      atualizado = await atualizarEncomenda(id, { status: 'entregue', retirado_por: quem.trim() || null });
+    }catch(err){ falha('Não foi possível registrar a baixa.', err); return; }
+    toast('Baixa registrada para o apto ' + atualizado.apto + '.');
+    renderTudo();
+
+    const destinatarios = construirDestinatarios(atualizado.apto, atualizado.telefone, atualizado.morador || ('morador(a) do apto ' + atualizado.apto));
+    if(destinatarios.length > 0){
+      abrirModalAviso(atualizado, 'entrega');
+    }
+  };
+
+  window.reabrir = async function(id){
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg) return;
+    if(!confirm('Marcar esta encomenda novamente como pendente?')) return;
+    try{
+      await atualizarEncomenda(id, { status: 'pendente' });
+    }catch(err){ falha('Não foi possível reabrir a encomenda.', err); return; }
+    toast('Encomenda reaberta.');
+    renderTudo();
+  };
+
+  window.excluir = async function(id){
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg) return;
+    if(!confirm('Excluir o cadastro desta encomenda (apto ' + pkg.apto + ')? Essa ação não pode ser desfeita.')) return;
+    const { error } = await sb.from('encomendas').update({ excluido_em: new Date().toISOString() }).eq('id', id);
+    if(error){ falha('Não foi possível excluir a encomenda.', error); return; }
+    dados = dados.filter(p => p.id !== id);
+    toast('Cadastro excluído.');
+    renderTudo();
+  };
+
+  window.avisarWhatsApp = async function(id){
+    let pkg = dados.find(p => p.id === id);
+    if(!pkg) return;
+    const destinatarios = construirDestinatarios(pkg.apto, pkg.telefone, pkg.morador || ('morador(a) do apto ' + pkg.apto));
+    if(destinatarios.length === 0){
+      const tel = prompt('Nenhum contato de WhatsApp cadastrado para o apto ' + pkg.apto + '. Informe um número (com DDD) para avisar agora:', '');
+      if(!tel || !tel.trim()) return;
+      try{
+        pkg = await atualizarEncomenda(id, { telefone: tel.trim() });
+      }catch(err){ falha('Não foi possível salvar o número.', err); return; }
+    }
+    abrirModalAviso(pkg);
+  };
+
+  // ---------- modal de aviso (lista de destinatários por apto) ----------
+  const modalAviso = document.getElementById('modalAviso');
+
+  // detecta, uma única vez, se este navegador/computador permite compartilhar arquivos (foto) via Web Share
+  let suportaCompartilharArquivo = false;
+  try{
+    suportaCompartilharArquivo = !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'teste.jpg', { type: 'image/jpeg' })] }));
+  }catch(e){ suportaCompartilharArquivo = false; }
+
+  window.abrirModalAviso = function(pkg, tipo){
+    tipo = tipo === 'entrega' ? 'entrega' : 'chegada';
+    const destinatarios = construirDestinatarios(pkg.apto, pkg.telefone, pkg.morador || ('morador(a) do apto ' + pkg.apto));
+    document.getElementById('avisoTitulo').textContent = (tipo === 'entrega' ? 'Avisar retirada da encomenda - apto ' : 'Avisar moradores do apto ') + pkg.apto;
+    const lista = document.getElementById('avisoLista');
+    const vazio = document.getElementById('avisoVazio');
+    if(destinatarios.length === 0){
+      lista.innerHTML = '';
+      vazio.classList.remove('hidden');
+      modalAviso.classList.remove('hidden');
+      return;
+    }
+    vazio.classList.add('hidden');
+    const mostrarFoto = tipo === 'chegada';
+    lista.innerHTML = destinatarios.map(d => {
+      const numeroValido = !!formatarTelefoneWhats(d.telefone);
+      return `
+        <div class="aviso-item" data-nome="${escapeHtml(d.nome||'')}" data-telefone="${escapeHtml(d.telefone||'')}">
+          <div>
+            <div class="nome">${escapeHtml(d.nome || 'Morador(a)')}</div>
+            <div class="tel">${escapeHtml(d.telefone)}</div>
+          </div>
+          <div class="botoes">
+            ${numeroValido ? '<button class="btn btn-verde btnEnviarWhats">Enviar WhatsApp</button>' : '<span style="font-size:.78rem;color:var(--vermelho);">número inválido</span>'}
+            ${numeroValido ? '<button class="btn btn-outline btnEnviarWeb" title="Use se o WhatsApp Desktop não abrir sozinho">abrir pelo navegador</button>' : ''}
+            ${(mostrarFoto && pkg.foto && suportaCompartilharArquivo) ? '<button class="btn btn-outline btnCompartilharFoto">📎 Enviar com foto</button>' : ''}
+            ${(mostrarFoto && pkg.foto) ? '<button class="btn btn-outline btnBaixarFoto">Baixar foto</button>' : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    lista.querySelectorAll('.aviso-item').forEach(item => {
+      const nome = item.dataset.nome;
+      const telefone = item.dataset.telefone;
+      const btnEnviar = item.querySelector('.btnEnviarWhats');
+      if(btnEnviar){
+        btnEnviar.addEventListener('click', () => {
+          const link = linkWhatsAppAppPara(pkg, { nome, telefone }, tipo);
+          if(link) window.location.href = link;
+          else alert('Número de WhatsApp inválido.');
+        });
+      }
+      const btnEnviarWeb = item.querySelector('.btnEnviarWeb');
+      if(btnEnviarWeb){
+        btnEnviarWeb.addEventListener('click', () => {
+          const link = linkWhatsAppWebPara(pkg, { nome, telefone }, tipo);
+          if(link) window.open(link, '_blank');
+          else alert('Número de WhatsApp inválido.');
+        });
+      }
+      const btnFoto = item.querySelector('.btnCompartilharFoto');
+      if(btnFoto){
+        btnFoto.addEventListener('click', () => compartilharFotoEMensagem(pkg, nome, telefone, tipo));
+      }
+      const btnBaixar = item.querySelector('.btnBaixarFoto');
+      if(btnBaixar){
+        btnBaixar.addEventListener('click', () => baixarFoto(pkg.id));
+      }
+    });
+
+    modalAviso.classList.remove('hidden');
+  };
+
+  // tenta abrir o "compartilhar" nativo do sistema com a foto + mensagem já prontas (funciona em alguns
+  // computadores/navegadores quando o WhatsApp Desktop está instalado e registrado como destino de compartilhamento;
+  // não é garantido em todo Windows/Mac)
+  async function compartilharFotoEMensagem(pkg, nome, telefone, tipo){
+    if(!pkg.foto) return;
+    try{
+      const resp = await fetch(pkg.foto);
+      const blob = await resp.blob();
+      const arquivo = new File([blob], 'encomenda-apto-' + String(pkg.apto).replace(/[^a-zA-Z0-9]/g,'') + '.jpg', { type: 'image/jpeg' });
+      const mensagem = montarMensagem(pkg, nome, tipo);
+      if(navigator.canShare && navigator.canShare({ files: [arquivo] })){
+        await navigator.share({ files: [arquivo], text: mensagem, title: 'Encomenda - Central Park' });
+      } else {
+        alert('Este computador não permite compartilhar a foto diretamente. Use "Baixar foto" e anexe manualmente na conversa do WhatsApp.');
+      }
+    }catch(err){
+      if(err && err.name === 'AbortError') return; // usuário cancelou o compartilhamento
+      console.error('Erro ao compartilhar foto', err);
+      alert('Não foi possível compartilhar a foto automaticamente. Use "Baixar foto" e anexe manualmente na conversa do WhatsApp.');
+    }
+  }
+
+  document.getElementById('btnFecharAviso').addEventListener('click', ()=> modalAviso.classList.add('hidden'));
+  modalAviso.addEventListener('click', function(e){
+    if(e.target === modalAviso) modalAviso.classList.add('hidden');
+  });
+
+  window.baixarFoto = async function(id){
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg || !pkg.foto) return;
+    try{
+      const blob = await (await fetch(pkg.foto)).blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'encomenda-apto-' + String(pkg.apto).replace(/[^a-zA-Z0-9]/g,'') + '-' + pkg.id.slice(0,8) + '.jpg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast('Foto baixada. Agora é só anexar no WhatsApp já aberto.');
+    }catch(err){
+      falha('Não foi possível baixar a foto.', err);
+    }
+  };
+
+  window.abrirFoto = function(id){
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg || !pkg.foto) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    const img = document.createElement('img');
+    img.src = pkg.foto;
+    overlay.appendChild(img);
+    overlay.addEventListener('click', ()=>overlay.remove());
+    document.body.appendChild(overlay);
+  };
+
+  // ---------- foto de encomenda já cadastrada (adicionar / trocar / remover / celular) ----------
+  const modalFoto = document.getElementById('modalFoto');
+  const zonaSoltarFoto = document.getElementById('zonaSoltarFoto');
+  let fotoEncomendaId = null;
+  let qrAguardando = null; // { encomendaId, fotoPathAnterior, expira }
+  let qrTimer = null;
+
+  function renderModalFoto(){
+    const pkg = dados.find(p => p.id === fotoEncomendaId);
+    if(!pkg){ fecharModalFoto(); return; }
+    document.getElementById('fotoTitulo').textContent = 'Foto da encomenda - apto ' + pkg.apto + (pkg.morador ? ' (' + pkg.morador + ')' : '');
+    const atual = document.getElementById('fotoAtual');
+    if(pkg.foto){
+      atual.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = pkg.foto;
+      atual.appendChild(img);
+    } else {
+      atual.innerHTML = pkg.fotoPath
+        ? '<div class="empty" style="padding:10px;">Foto indisponível no momento.</div>'
+        : '<div class="empty" style="padding:10px;">Esta encomenda ainda não tem foto.</div>';
+    }
+    document.getElementById('btnRemoverFoto').classList.toggle('hidden', !pkg.fotoPath);
+  }
+
+  window.abrirModalFoto = function(id){
+    if(!dados.find(p => p.id === id)) return;
+    fotoEncomendaId = id;
+    esconderQr();
+    renderModalFoto();
+    modalFoto.classList.remove('hidden');
+  };
+
+  function fecharModalFoto(){
+    fotoEncomendaId = null;
+    esconderQr();
+    zonaSoltarFoto.classList.remove('arrastando');
+    modalFoto.classList.add('hidden');
+  }
+
+  async function aplicarFotoNaEncomenda(id, dataUrl){
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg) return;
+    const anterior = pkg.fotoPath;
+    toast('Enviando foto…', 10000);
+    let caminho = null;
+    try{
+      caminho = await enviarFoto(id, dataUrl);
+      await atualizarEncomenda(id, { foto_path: caminho });
+    }catch(err){
+      apagarArquivo(caminho);
+      falha('Não foi possível salvar a foto.', err);
+      return;
+    }
+    if(anterior) apagarArquivo(anterior);
+    toast(anterior ? 'Foto substituída.' : 'Foto adicionada.');
+    if(fotoEncomendaId === id) renderModalFoto();
+    renderTudo();
+  }
+
+  function receberArquivoFoto(file){
+    const id = fotoEncomendaId;
+    if(!id) return;
+    if(!file || !/^image\//.test(file.type)){ toast('O item escolhido não é uma imagem.'); return; }
+    comprimirImagem(file, dataUrl => aplicarFotoNaEncomenda(id, dataUrl), () => toast('Não foi possível ler esta imagem.'));
+  }
+
+  document.getElementById('btnFotoCamera').addEventListener('click', function(){
+    const id = fotoEncomendaId;
+    if(!id) return;
+    abrirCamera(dataUrl => aplicarFotoNaEncomenda(id, dataUrl));
+  });
+
+  document.getElementById('inputFotoEncomenda').addEventListener('change', function(e){
+    receberArquivoFoto(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  document.getElementById('btnRemoverFoto').addEventListener('click', async function(){
+    const pkg = dados.find(p => p.id === fotoEncomendaId);
+    if(!pkg || !pkg.fotoPath) return;
+    if(!confirm('Remover a foto desta encomenda (apto ' + pkg.apto + ')?')) return;
+    const anterior = pkg.fotoPath;
+    try{
+      await atualizarEncomenda(pkg.id, { foto_path: null });
+    }catch(err){ falha('Não foi possível remover a foto.', err); return; }
+    apagarArquivo(anterior);
+    toast('Foto removida.');
+    renderModalFoto();
+    renderTudo();
+  });
+
+  // QR code: o celular abre a página foto.html, tira a foto e ela aparece aqui pelo tempo real
+  document.getElementById('btnFotoCelular').addEventListener('click', async function(){
+    const id = fotoEncomendaId;
+    const pkg = dados.find(p => p.id === id);
+    if(!pkg) return;
+    if(typeof window.qrcode !== 'function'){ toast('O gerador de QR code não carregou. Verifique a internet.', 4000); return; }
+    const { data: token, error } = await sb.rpc('gerar_token_foto', { p_encomenda: id });
+    if(error){ falha('Não foi possível gerar o QR code.', error); return; }
+    const url = new URL('foto.html?t=' + token, location.href).href;
+    const qr = window.qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    document.getElementById('qrImagem').innerHTML = qr.createSvgTag(6, 12);
+    qrAguardando = { encomendaId: id, fotoPathAnterior: pkg.fotoPath, expira: Date.now() + 15 * 60 * 1000 };
+    document.getElementById('fotoOpcoes').classList.add('hidden');
+    document.getElementById('fotoAtual').classList.add('hidden');
+    document.getElementById('qrArea').classList.remove('hidden');
+    clearInterval(qrTimer);
+    const atualizarContagem = () => {
+      const el = document.getElementById('qrContagem');
+      const restante = qrAguardando ? qrAguardando.expira - Date.now() : 0;
+      if(restante <= 0){
+        el.textContent = 'QR code expirado. Clique em "Voltar" e gere outro.';
+        document.getElementById('qrImagem').style.opacity = '.25';
+        clearInterval(qrTimer);
+        return;
+      }
+      const m = Math.floor(restante / 60000), s = Math.floor((restante % 60000) / 1000);
+      el.textContent = 'Válido por ' + m + ':' + String(s).padStart(2,'0');
+    };
+    document.getElementById('qrImagem').style.opacity = '1';
+    atualizarContagem();
+    qrTimer = setInterval(atualizarContagem, 1000);
+  });
+
+  function esconderQr(){
+    clearInterval(qrTimer);
+    document.getElementById('qrArea').classList.add('hidden');
+    document.getElementById('fotoAtual').classList.remove('hidden');
+    document.getElementById('fotoOpcoes').classList.remove('hidden');
+  }
+  document.getElementById('btnCancelarQr').addEventListener('click', esconderQr);
+
+  function tratarFotoRecebidaDoCelular(novo){
+    if(!qrAguardando || qrAguardando.encomendaId !== novo.id) return;
+    if(Date.now() > qrAguardando.expira + 60000){ qrAguardando = null; return; }
+    if(!novo.fotoPath || novo.fotoPath === qrAguardando.fotoPathAnterior || novo.fotoOrigem !== 'celular') return;
+    if(qrAguardando.fotoPathAnterior) apagarArquivo(qrAguardando.fotoPathAnterior);
+    qrAguardando = null;
+    toast('📱 Foto recebida do celular.', 3500);
+    if(fotoEncomendaId === novo.id) esconderQr();
+  }
+
+  document.getElementById('btnFecharFoto').addEventListener('click', fecharModalFoto);
+  modalFoto.addEventListener('click', function(e){
+    if(e.target === modalFoto) fecharModalFoto();
+  });
+
+  // colar com Ctrl+V (ex.: foto copiada no WhatsApp Desktop): na janela de foto da encomenda
+  // ou na aba "Nova Encomenda" (neste caso, texto colado nos campos segue normal)
+  function imagemDaAreaDeTransferencia(e){
+    const itens = (e.clipboardData && e.clipboardData.items) || [];
+    for(let i=0;i<itens.length;i++){
+      if(itens[i].kind === 'file' && itens[i].type.indexOf('image/') === 0) return itens[i].getAsFile();
+    }
+    return null;
+  }
+  document.addEventListener('paste', function(e){
+    if(!modalCamera.classList.contains('hidden')) return;
+    if(!document.getElementById('telaLogin').classList.contains('hidden')) return;
+    const imagem = imagemDaAreaDeTransferencia(e);
+
+    if(fotoEncomendaId && !modalFoto.classList.contains('hidden')){
+      if(!imagem){
+        toast('Nenhuma imagem copiada. Copie a foto primeiro (botão direito → Copiar) e tente de novo.');
+        return;
+      }
+      e.preventDefault();
+      receberArquivoFoto(imagem);
+      return;
+    }
+
+    const abaCadastroAberta = !document.getElementById('tab-cadastrar').classList.contains('hidden');
+    const algumModalAberto = !modalAviso.classList.contains('hidden') || document.querySelector('body > .modal-overlay:not(.hidden):not([id])');
+    if(!imagem || !abaCadastroAberta || algumModalAberto) return;
+    e.preventDefault();
+    comprimirImagem(imagem,
+      dataUrl => usarFotoNoFormulario(dataUrl, 'Foto colada.'),
+      () => toast('Não foi possível ler esta imagem.'));
+  });
+
+  // arrastar e soltar a imagem em qualquer ponto da janela de foto
+  ['dragenter','dragover'].forEach(ev => modalFoto.addEventListener(ev, function(e){
+    e.preventDefault();
+    zonaSoltarFoto.classList.add('arrastando');
+  }));
+  modalFoto.addEventListener('dragleave', function(e){
+    if(!modalFoto.contains(e.relatedTarget)) zonaSoltarFoto.classList.remove('arrastando');
+  });
+  modalFoto.addEventListener('drop', function(e){
+    e.preventDefault();
+    zonaSoltarFoto.classList.remove('arrastando');
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if(files && files.length){ receberArquivoFoto(files[0]); return; }
+    toast('Não foi possível usar o item arrastado. Tente copiar a foto e colar com Ctrl+V.');
+  });
+
+  document.getElementById('buscaPendentes').addEventListener('input', renderPendentes);
+  document.getElementById('buscaEntregues').addEventListener('input', renderEntregues);
+
+  // ---------- relatório ----------
+  function renderRelatorio(){
+    const pendentes = dados.filter(p => p.status === 'pendente');
+    const hoje = hojeISO();
+    const entreguesHoje = dados.filter(p => p.status === 'entregue' && dataLocalISO(p.entregueEm) === hoje);
+
+    document.getElementById('statPendentes').textContent = pendentes.length;
+    document.getElementById('statHoje').textContent = entreguesHoje.length;
+    document.getElementById('statTotal').textContent = dados.length;
+
+    const porApto = {};
+    pendentes.forEach(p=>{
+      if(!porApto[p.apto]) porApto[p.apto] = [];
+      porApto[p.apto].push(p);
+    });
+    const linhas = Object.keys(porApto).sort().map(apto=>{
+      const lista = porApto[apto].sort((a,b)=> new Date(a.dataChegada) - new Date(b.dataChegada));
+      return `<tr><td>${escapeHtml(apto)}</td><td>${lista.length}</td><td>${formatarDataBR(lista[0].dataChegada)}</td></tr>`;
+    });
+    const tbody = document.querySelector('#tabelaPorApto tbody');
+    tbody.innerHTML = linhas.join('');
+    document.getElementById('tabelaPorApto').classList.toggle('hidden', linhas.length === 0);
+    document.getElementById('semPendenciasMsg').classList.toggle('hidden', linhas.length !== 0);
+  }
+
+  // ---------- consulta / filtros (aba Relatório) ----------
+  let filtroStatusAtual = 'todas';
+
+  function renderConsulta(){
+    const termo = normaliza(document.getElementById('filtroApto').value);
+    const termoTransp = normaliza(document.getElementById('filtroTransportadora').value);
+    const dataDe = document.getElementById('filtroDataDe').value;
+    const dataAte = document.getElementById('filtroDataAte').value;
+
+    let lista = dados.slice();
+    if(filtroStatusAtual !== 'todas'){
+      lista = lista.filter(p => p.status === filtroStatusAtual);
+    }
+    if(termo){
+      lista = lista.filter(p => normaliza(p.apto).includes(termo) || normaliza(p.morador).includes(termo));
+    }
+    if(termoTransp){
+      lista = lista.filter(p => normaliza(p.transportadora).includes(termoTransp));
+    }
+    if(dataDe){
+      lista = lista.filter(p => p.dataChegada && p.dataChegada >= dataDe);
+    }
+    if(dataAte){
+      lista = lista.filter(p => p.dataChegada && p.dataChegada <= dataAte);
+    }
+    if(document.getElementById('filtroSemFoto').checked){
+      lista = lista.filter(p => !p.fotoPath);
+    }
+    lista.sort((a,b) => new Date(b.cadastradoEm) - new Date(a.cadastradoEm));
+
+    const container = document.getElementById('resultadoConsulta');
+    if(lista.length === 0){
+      container.innerHTML = '<div class="empty">Nenhuma encomenda encontrada com esses filtros.</div>';
+      return;
+    }
+    container.innerHTML = '<p style="font-size:.82rem;color:#666;margin-bottom:8px;">' + lista.length + ' encomenda(s) encontrada(s)</p>' +
+      lista.map(p => {
+        const acoes = p.status === 'pendente'
+          ? `<button class="btn btn-outline" onclick="avisarWhatsApp('${p.id}')">📲 Avisar</button>
+             <button class="btn btn-verde" onclick="darBaixa('${p.id}')">Dar baixa</button>`
+          : `<button class="btn btn-outline" onclick="reabrir('${p.id}')">Reabrir</button>`;
+        return `
+          <div class="pkg">
+            ${htmlMiniatura(p)}
+            <div class="info">
+              <div class="apto">Apto ${escapeHtml(p.apto)}</div>
+              ${p.morador ? `<div class="morador">${escapeHtml(p.morador)}</div>` : ''}
+              <div class="meta">${escapeHtml(p.transportadora || 'Remetente não informado')} · chegou em ${formatarDataHoraBR(p.cadastradoEm)}</div>
+              ${p.status === 'entregue' ? `<div class="meta">Entregue em ${formatarDataHoraBR(p.entregueEm)}${p.retiradoPor ? ' · retirado por ' + escapeHtml(p.retiradoPor) : ''}</div>` : ''}
+              ${htmlAutoria(p)}
+              <span class="badge ${p.status === 'pendente' ? 'badge-pendente' : 'badge-entregue'}">${p.status === 'pendente' ? 'PENDENTE' : 'ENTREGUE'}</span>${htmlBadgeSemFoto(p)}
+            </div>
+            <div class="pkg-actions">${acoes}
+              ${btnFotoHtml(p.id)}</div>
+          </div>
+        `;
+      }).join('');
+  }
+
+  document.querySelectorAll('.filtro-status').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.filtro-status').forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+      filtroStatusAtual = this.dataset.status;
+      renderConsulta();
+    });
+  });
+  ['filtroApto','filtroTransportadora','filtroDataDe','filtroDataAte'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', renderConsulta);
+  });
+  document.getElementById('filtroSemFoto').addEventListener('change', renderConsulta);
+  document.getElementById('btnLimparFiltros').addEventListener('click', function(){
+    document.getElementById('filtroSemFoto').checked = false;
+    document.getElementById('filtroApto').value = '';
+    document.getElementById('filtroTransportadora').value = '';
+    document.getElementById('filtroDataDe').value = '';
+    document.getElementById('filtroDataAte').value = '';
+    filtroStatusAtual = 'todas';
+    document.querySelectorAll('.filtro-status').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.filtro-status[data-status="todas"]').classList.add('active');
+    renderConsulta();
+  });
+
+  // ---------- administração: usuários ----------
+  function renderUsuarios(){
+    const container = document.getElementById('listaUsuarios');
+    const lista = Object.values(porteiros).sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    if(lista.length === 0){ container.innerHTML = '<div class="empty">Nenhum usuário.</div>'; return; }
+    container.innerHTML = lista.map(p => `
+      <div class="pkg">
+        <div class="info">
+          <div class="morador">${escapeHtml(p.nome)}${p.id === eu.id ? ' (você)' : ''}</div>
+          <div class="meta">usuário: <strong>${escapeHtml(p.usuario)}</strong></div>
+          <span class="badge ${p.papel === 'admin' ? 'badge-papel-admin' : 'badge-semfoto'}" style="margin-left:0;">${p.papel === 'admin' ? 'ADMINISTRADOR' : 'PORTEIRO'}</span>${p.ativo ? '' : '<span class="badge badge-inativo">DESATIVADO</span>'}
+        </div>
+        <div class="pkg-actions">
+          <button class="btn btn-outline" onclick="redefinirSenhaPorteiro('${p.id}')">Redefinir senha</button>
+          ${p.id === eu.id ? '' : `<button class="btn ${p.ativo ? 'btn-vermelho' : 'btn-outline'}" onclick="alternarAtivoPorteiro('${p.id}')">${p.ativo ? 'Desativar' : 'Reativar'}</button>`}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('formUsuario').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const nome = document.getElementById('novoNome').value.trim();
+    const usuario = normalizaUsuario(document.getElementById('novoUsuario').value);
+    const senha = document.getElementById('novaSenha').value;
+    const papel = document.getElementById('novoPapel').value;
+    if(!nome){ toast('Informe o nome.'); return; }
+    if(usuario.length < 2){ toast('Informe um usuário com pelo menos 2 letras (sem espaços ou acentos).'); return; }
+    if(senha.length < 6){ toast('A senha precisa ter pelo menos 6 caracteres.'); return; }
+    if(Object.values(porteiros).some(p => p.usuario === usuario)){ toast('Já existe um usuário "' + usuario + '".'); return; }
+    const btn = document.getElementById('btnCriarUsuario');
+    btn.disabled = true;
+    try{
+      // cliente separado para não trocar a sessão do administrador
+      const temp = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'centralpark_cadastro_tmp' }
+      });
+      const { data, error } = await temp.auth.signUp({ email: emailDoUsuario(usuario), password: senha });
+      if(error) throw error;
+      if(!data.user || (data.user.identities && data.user.identities.length === 0)) throw new Error('Este usuário já existe no Supabase.');
+      const ins = await sb.from('porteiros').insert({ id: data.user.id, usuario: usuario, nome: nome, papel: papel, ativo: true });
+      if(ins.error) throw ins.error;
+      await carregarPorteiros();
+      renderUsuarios();
+      this.reset();
+      toast('Usuário "' + usuario + '" criado.');
+      if(!data.session){
+        alert('Usuário criado, mas o Supabase está exigindo confirmação de e-mail. Desative "Confirm email" em Authentication → Providers → Email, senão este usuário não conseguirá entrar.');
+      }
+    }catch(err){
+      const msg = (err && err.message) || '';
+      falha(/already|registered|existe/i.test(msg) ? 'Este usuário já existe.' : 'Não foi possível criar o usuário: ' + msg, err);
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
+  window.redefinirSenhaPorteiro = async function(id){
+    const p = porteiros[id];
+    if(!p) return;
+    const nova = prompt('Nova senha para ' + p.nome + ' (mínimo 6 caracteres):');
+    if(nova === null) return;
+    if(nova.length < 6){ alert('A senha precisa ter pelo menos 6 caracteres.'); return; }
+    const { error } = await sb.rpc('admin_redefinir_senha', { p_porteiro: id, p_senha: nova });
+    if(error){ falha('Não foi possível redefinir a senha.', error); return; }
+    toast('Senha de ' + p.nome + ' redefinida.');
+  };
+
+  window.alternarAtivoPorteiro = async function(id){
+    const p = porteiros[id];
+    if(!p || id === eu.id) return;
+    if(!confirm((p.ativo ? 'Desativar' : 'Reativar') + ' o usuário ' + p.nome + '?')) return;
+    const { error } = await sb.from('porteiros').update({ ativo: !p.ativo }).eq('id', id);
+    if(error){ falha('Não foi possível alterar o usuário.', error); return; }
+    await carregarPorteiros();
+    renderUsuarios();
+    toast('Usuário ' + (p.ativo ? 'desativado.' : 'reativado.'));
+  };
+
+  // ---------- administração: turnos ----------
+  (function(){
+    const ate = hojeISO();
+    const d = new Date(); d.setDate(d.getDate() - 7);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    document.getElementById('turnoDe').value = d.toISOString().slice(0,10);
+    document.getElementById('turnoAte').value = ate;
+  })();
+  ['turnoDe','turnoAte'].forEach(id => document.getElementById(id).addEventListener('change', renderTurnos));
+
+  function duracao(inicio, fim){
+    const min = Math.max(0, Math.round((new Date(fim) - new Date(inicio)) / 60000));
+    return Math.floor(min / 60) + 'h' + String(min % 60).padStart(2,'0');
+  }
+
+  async function renderTurnos(){
+    const container = document.getElementById('listaTurnos');
+    const de = document.getElementById('turnoDe').value;
+    const ate = document.getElementById('turnoAte').value;
+    let q = sb.from('turnos').select('*').order('inicio', { ascending: false }).limit(1000);
+    if(de) q = q.gte('inicio', new Date(de + 'T00:00:00').toISOString());
+    if(ate) q = q.lte('inicio', new Date(ate + 'T23:59:59').toISOString());
+    const { data, error } = await q;
+    if(error){ container.innerHTML = '<div class="empty">Não foi possível carregar os turnos.</div>'; console.error(error); return; }
+    if(data.length === 0){ container.innerHTML = '<div class="empty">Nenhum turno no período.</div>'; return; }
+    container.innerHTML = '<table><thead><tr><th>Porteiro</th><th>Entrada</th><th>Saída</th><th>Duração</th></tr></thead><tbody>' +
+      data.map(t => {
+        let saida, dur;
+        if(t.fim){
+          saida = formatarDataHoraBR(t.fim) + (t.encerrado_automaticamente ? ' <span class="hint">(não encerrou; última atividade)</span>' : '');
+          dur = duracao(t.inicio, t.fim);
+        } else {
+          saida = 'em andamento <span class="hint">(última atividade ' + formatarHora(t.ultima_atividade) + ')</span>';
+          dur = duracao(t.inicio, new Date().toISOString());
+        }
+        return `<tr><td>${escapeHtml(nomeDe(t.porteiro_id) || '?')}</td><td>${formatarDataHoraBR(t.inicio)}</td><td>${saida}</td><td>${dur}</td></tr>`;
+      }).join('') + '</tbody></table>';
+  }
+
+  // ---------- backup ----------
+  async function gerarArquivoBackup(sufixo){
+    const [encomendas, moradoresBd] = await Promise.all([
+      buscarTodas(() => sb.from('encomendas').select('*').order('cadastrado_em')),
+      buscarTodas(() => sb.from('moradores').select('*').order('apto'))
+    ]);
+    const conteudo = {
+      versao: 'online-1',
+      geradoEm: new Date().toISOString(),
+      encomendas: encomendas,
+      moradores: moradoresBd,
+      porteiros: Object.values(porteiros).map(p => ({ id: p.id, usuario: p.usuario, nome: p.nome, papel: p.papel, ativo: p.ativo }))
+    };
+    const blob = new Blob([JSON.stringify(conteudo, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'backup-encomendas-central-park-online-' + (sufixo ? sufixo + '-' : '') + hojeISO() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  document.getElementById('btnExportar').addEventListener('click', async function(){
+    try{
+      await gerarArquivoBackup('');
+      toast('Backup gerado (encomendas, moradores e usuários).');
+    }catch(err){ falha('Não foi possível gerar o backup.', err); }
+  });
+
+  function renderStatusBackup(){
+    const el = document.getElementById('statusBackupAuto');
+    let ultimo = null;
+    try{ ultimo = localStorage.getItem(KEY_ULTIMO_BACKUP_AUTO); }catch(e){}
+    el.textContent = ultimo
+      ? '✅ Backup automático ativo neste computador — último em ' + formatarDataBR(ultimo) + ' (pasta de downloads).'
+      : 'ℹ️ O backup automático ainda não rodou neste computador. Ele roda sozinho, uma vez por dia.';
+  }
+
+  // backup automático diário (arquivo .json na pasta de downloads deste computador)
+  async function verificarBackupAutomatico(){
+    if(!eu || (dados.length === 0 && moradores.length === 0)) return;
+    const hoje = hojeISO();
+    let ultimo = null;
+    try{ ultimo = localStorage.getItem(KEY_ULTIMO_BACKUP_AUTO); }catch(e){}
+    if(ultimo === hoje) return;
+    try{
+      await gerarArquivoBackup('auto');
+      try{ localStorage.setItem(KEY_ULTIMO_BACKUP_AUTO, hoje); }catch(e){}
+      toast('Backup automático do dia salvo na pasta de downloads.');
+    }catch(err){ console.error('Erro no backup automático', err); }
+  }
+
+  // importação do backup da versão local (arquivo único / localStorage)
+  document.getElementById('inputImportar').addEventListener('change', function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev){
+      e.target.value = '';
+      let importado;
+      try{ importado = JSON.parse(ev.target.result); }
+      catch(err){ alert('Não foi possível ler este arquivo. Verifique se é um backup válido.'); return; }
+      if(importado && !Array.isArray(importado) && String(importado.versao || '').indexOf('online') === 0){
+        alert('Este arquivo é um backup da versão online. A restauração dele é feita pelo suporte, direto no Supabase.');
+        return;
+      }
+      const encomendasImportadas = Array.isArray(importado) ? importado : (importado.encomendas || []);
+      const moradoresImportados = Array.isArray(importado) ? [] : (importado.moradores || []);
+      if(!confirm('Importar ' + encomendasImportadas.length + ' encomenda(s) e ' + moradoresImportados.length + ' morador(es) da versão local?\n\nItens já importados antes são ignorados. Não feche esta página até terminar.')) return;
+      await importarBackupLocal(encomendasImportadas, moradoresImportados);
+    };
+    reader.readAsText(file);
+  });
+
+  async function importarBackupLocal(encomendasImportadas, moradoresImportados){
+    const prog = document.getElementById('progressoImportacao');
+    prog.classList.remove('hidden');
+    let novas = 0, ignoradas = 0, erros = 0, fotosComErro = 0;
+    try{
+      const jaImportadas = new Set((await buscarTodas(() => sb.from('encomendas').select('legado_id').not('legado_id', 'is', null))).map(r => r.legado_id));
+      for(let i = 0; i < encomendasImportadas.length; i++){
+        const p = encomendasImportadas[i];
+        prog.textContent = 'Importando encomendas: ' + (i + 1) + ' de ' + encomendasImportadas.length + '…';
+        const legado = p && p.id != null ? String(p.id) : null;
+        if(!legado || jaImportadas.has(legado)){ ignoradas++; continue; }
+        const id = uuid();
+        let fotoPath = null;
+        if(p.foto && /^data:image\//.test(p.foto)){
+          try{ fotoPath = await enviarFoto(id, p.foto); }catch(err){ fotosComErro++; console.error(err); }
+        }
+        const entregue = p.status === 'entregue';
+        const { error } = await sb.from('encomendas').insert({
+          id: id,
+          legado_id: legado,
+          apto: p.apto || '?',
+          morador: p.morador || null,
+          transportadora: p.transportadora || null,
+          data_chegada: p.dataChegada || (p.cadastradoEm ? dataLocalISO(p.cadastradoEm) : hojeISO()),
+          telefone: p.telefone || null,
+          observacao: p.observacao || null,
+          foto_path: fotoPath,
+          foto_origem: fotoPath ? 'legado' : null,
+          status: entregue ? 'entregue' : 'pendente',
+          cadastrado_em: p.cadastradoEm || new Date().toISOString(),
+          entregue_em: entregue ? (p.entregueEm || null) : null,
+          retirado_por: entregue ? (p.retiradoPor || null) : null
+        });
+        if(error){ erros++; apagarArquivo(fotoPath); console.error('Erro ao importar encomenda', p, error); }
+        else { novas++; jaImportadas.add(legado); }
+      }
+
+      prog.textContent = 'Importando moradores…';
+      const chave = m => normaliza(m.apto) + '|' + normaliza(m.nome) + '|' + String(m.telefone || '').replace(/\D/g,'');
+      const existentes = new Set(moradores.map(chave));
+      const novosMoradores = [];
+      moradoresImportados.forEach(m => {
+        if(!m || !m.apto) return;
+        const k = chave(m);
+        if(existentes.has(k)) return;
+        existentes.add(k);
+        novosMoradores.push({ apto: m.apto, nome: m.nome || null, telefone: m.telefone || null });
+      });
+      if(novosMoradores.length){
+        const { error } = await sb.from('moradores').insert(novosMoradores);
+        if(error) throw error;
+      }
+
+      await Promise.all([carregarMoradores(), carregarEncomendas()]);
+      renderTudo();
+      renderMoradores();
+      prog.textContent = 'Importação concluída.';
+      alert('Importação concluída.\n\nEncomendas novas: ' + novas + '\nJá existentes (ignoradas): ' + ignoradas +
+            '\nCom erro: ' + erros + (fotosComErro ? '\nFotos que não subiram: ' + fotosComErro : '') +
+            '\nMoradores novos: ' + novosMoradores.length);
+    }catch(err){
+      prog.textContent = 'A importação parou por um erro. Pode rodar de novo: o que já entrou é ignorado.';
+      falha('Erro na importação.', err);
+    }
+  }
+
+  // ---------- inicialização ----------
+  sb.auth.getSession().then(({ data }) => {
+    if(data && data.session) iniciarApp(false);
+    else mostrarLogin();
+  });
+})();
+</script>
+
+</body>
+</html>

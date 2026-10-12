@@ -1,0 +1,3 @@
+# backups contêm dados pessoais de moradores — nunca publicar
+*.json
+.DS_Store
