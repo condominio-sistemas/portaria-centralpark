@@ -594,7 +594,7 @@
     <div class="card">
       <h2>Banco de dados</h2>
       <p style="font-size:.88rem;color:#555;">Os dados ficam na nuvem (Supabase). O backup gera um arquivo .json com encomendas, moradores e usuários (as fotos ficam no armazenamento do Supabase e não vão no arquivo).</p>
-      <p id="statusBackupAuto" style="font-size:.82rem;border-radius:6px;padding:8px 10px;"></p>
+      <p id="statusBackupAuto" style="font-size:.82rem;border-radius:6px;padding:8px 10px;">✅ Backup completo automático todo dia às 03:00, na nuvem (repositório privado no GitHub), incluindo as fotos. Use o botão abaixo só quando quiser uma cópia na hora neste computador.</p>
       <div class="actions">
         <button class="btn btn-primary" id="btnExportar">📦 Gerar backup (.json)</button>
         <label class="btn btn-outline" style="cursor:pointer;margin:0;">
@@ -710,7 +710,6 @@
   const BUCKET = 'fotos';
   const MAX_LADO_FOTO = 1024;
   const QUALIDADE_FOTO = 0.75;
-  const KEY_ULTIMO_BACKUP_AUTO = 'centralpark_online_ultimo_backup_auto';
 
   function mostrarLogin(msg){
     document.getElementById('telaLogin').classList.remove('hidden');
@@ -983,8 +982,6 @@
       appIniciado = true;
       assinarTempoReal();
       setInterval(pulsarTurno, 5 * 60 * 1000);
-      setTimeout(verificarBackupAutomatico, 3000);
-      setInterval(verificarBackupAutomatico, 60 * 60 * 1000);
       // renova os links das fotos antes de expirarem (sistema pode ficar aberto por dias)
       setInterval(() => { resolverFotos(dados).then(renderTudo); }, 6 * 60 * 60 * 1000);
     }
@@ -1112,7 +1109,7 @@
       if(btn.dataset.tab === 'entregues') renderEntregues();
       if(btn.dataset.tab === 'moradores') renderMoradores();
       if(btn.dataset.tab === 'relatorio'){ renderRelatorio(); renderConsulta(); }
-      if(btn.dataset.tab === 'admin'){ renderUsuarios(); renderTurnos(); renderStatusBackup(); }
+      if(btn.dataset.tab === 'admin'){ renderUsuarios(); renderTurnos(); }
     });
   });
 
@@ -2170,28 +2167,6 @@
     }catch(err){ falha('Não foi possível gerar o backup.', err); }
   });
 
-  function renderStatusBackup(){
-    const el = document.getElementById('statusBackupAuto');
-    let ultimo = null;
-    try{ ultimo = localStorage.getItem(KEY_ULTIMO_BACKUP_AUTO); }catch(e){}
-    el.textContent = ultimo
-      ? '✅ Backup automático ativo neste computador — último em ' + formatarDataBR(ultimo) + ' (pasta de downloads).'
-      : 'ℹ️ O backup automático ainda não rodou neste computador. Ele roda sozinho, uma vez por dia.';
-  }
-
-  // backup automático diário (arquivo .json na pasta de downloads deste computador)
-  async function verificarBackupAutomatico(){
-    if(!eu || (dados.length === 0 && moradores.length === 0)) return;
-    const hoje = hojeISO();
-    let ultimo = null;
-    try{ ultimo = localStorage.getItem(KEY_ULTIMO_BACKUP_AUTO); }catch(e){}
-    if(ultimo === hoje) return;
-    try{
-      await gerarArquivoBackup('auto');
-      try{ localStorage.setItem(KEY_ULTIMO_BACKUP_AUTO, hoje); }catch(e){}
-      toast('Backup automático do dia salvo na pasta de downloads.');
-    }catch(err){ console.error('Erro no backup automático', err); }
-  }
 
   // importação do backup da versão local (arquivo único / localStorage)
   document.getElementById('inputImportar').addEventListener('change', function(e){

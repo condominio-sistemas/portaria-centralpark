@@ -95,7 +95,7 @@ O código fica visível por ser repositório público, mas os dados não: eles f
 - **Plano gratuito do Supabase**: 500 MB de banco e 1 GB de fotos (cerca de 10 mil fotos de 100 KB).
   - **Não tem backup automático.** Para compensar, há duas cópias:
     - **Backup diário no GitHub**: o repositório **privado** `condominio-sistemas/backup-centralpark` copia o banco inteiro todo dia às 03:00, guardando o histórico de cada dia. Ele usa o segredo `SUPABASE_DB_PASSWORD` (senha do banco) e as instruções de restauração estão no LEIA-ME de lá.
-    - **Backup `.json` diário** na pasta de downloads do computador que estiver com o sistema aberto. Mantenha essa pasta dentro do OneDrive.
+    - **Backup `.json` manual**: botão em Administração → Banco de dados, para gerar uma cópia na hora (sem fotos).
   - As fotos **não** vão no `.json`.
   - O projeto gratuito é pausado após 7 dias sem uso. Com uso diário, isso não acontece.
 - **Plano Pro**: US$ 25/mês, com backup diário automático e sem pausa. É a base para cobrar mensalidade.
