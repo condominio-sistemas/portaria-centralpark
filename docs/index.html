@@ -669,7 +669,14 @@
   </div>
 </div>
 
-<div id="telaLogin" class="login-overlay">
+<div id="telaCarregando" class="login-overlay">
+  <div class="login-card" style="text-align:center;">
+    <h1>Controle de Encomendas</h1>
+    <p class="sub-login">Carregando…</p>
+  </div>
+</div>
+
+<div id="telaLogin" class="login-overlay hidden">
   <form class="login-card" id="formLogin">
     <svg class="logo-login" viewBox="110 45 780 660" role="img" aria-label="Macaé Central Park" xmlns="http://www.w3.org/2000/svg">
       <g fill="currentColor" font-family="'Liberation Sans',Arial,Helvetica,sans-serif" text-anchor="middle">
@@ -711,7 +718,11 @@
   const MAX_LADO_FOTO = 1024;
   const QUALIDADE_FOTO = 0.75;
 
+  function esconderCarregando(){
+    document.getElementById('telaCarregando').classList.add('hidden');
+  }
   function mostrarLogin(msg){
+    esconderCarregando();
     document.getElementById('telaLogin').classList.remove('hidden');
     const el = document.getElementById('loginErro');
     el.textContent = msg || '';
@@ -726,7 +737,7 @@
     document.getElementById('btnEntrar').disabled = true;
     return;
   }
-  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, { realtime: { worker: true } });
 
   // ---------- estado ----------
   let dados = [];        // encomendas (não excluídas)
@@ -970,6 +981,7 @@
       return;
     }
     document.getElementById('telaLogin').classList.add('hidden');
+    esconderCarregando();
     document.getElementById('nomePorteiro').textContent = eu.nome;
     document.getElementById('inicioTurno').textContent = formatarDataHoraBR(inicioTurno);
     document.getElementById('infoTurno').classList.remove('hidden');
@@ -1001,8 +1013,36 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'moradores' }, () => {
         carregarMoradores().then(() => { if(!editandoMoradorId) renderMoradores(); }).catch(err => console.error(err));
       })
-      .subscribe();
+      .subscribe(status => {
+        // se a conexão caiu, o que mudou nesse intervalo não chega pelo tempo real: busca tudo de novo ao reconectar
+        if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') conexaoCaiu = true;
+        if(status === 'SUBSCRIBED' && conexaoCaiu){ conexaoCaiu = false; sincronizar(); }
+      });
   }
+
+  let conexaoCaiu = false;
+  let ultimaSincronizacao = Date.now();
+  let sincronizando = false;
+  async function sincronizar(){
+    if(sincronizando || !eu) return;
+    sincronizando = true;
+    try{
+      await Promise.all([carregarMoradores(), carregarEncomendas()]);
+      ultimaSincronizacao = Date.now();
+      renderTudo();
+      if(!editandoMoradorId) renderMoradores();
+      if(fotoEncomendaId) renderModalFoto();
+    }catch(err){
+      console.error('Erro ao sincronizar', err);
+    }finally{
+      sincronizando = false;
+    }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible' && Date.now() - ultimaSincronizacao > 10000) sincronizar();
+  });
+  window.addEventListener('online', () => sincronizar());
+  setInterval(() => { if(document.visibilityState === 'visible') sincronizar(); }, 60 * 1000);
 
   async function atualizarEncomendaDoServidor(id){
     const { data, error } = await sb.from('encomendas').select('*').eq('id', id).maybeSingle();
@@ -1250,6 +1290,7 @@
       const novo = deLinha(data);
       await resolverFotos([novo]);
       upsertLocal(novo);
+      renderTudo();
       toast('Encomenda cadastrada para o apto ' + apto + '.');
 
       const destinatarios = construirDestinatarios(novo.apto, novo.telefone, novo.morador || ('morador(a) do apto ' + novo.apto));
