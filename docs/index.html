@@ -1033,6 +1033,8 @@
     if(pkg.transportadora) msg += 'Transportadora/remetente: ' + pkg.transportadora + '\n';
     msg += 'Recebida em: ' + formatarDataHoraBR(pkg.cadastradoEm) + '\n';
     if(pkg.observacao) msg += 'Observação: ' + pkg.observacao + '\n';
+    const linkFoto = linkFotoEmCache(pkg);
+    if(linkFoto) msg += '\n📷 Ver foto da encomenda: ' + linkFoto + '\n';
     msg += '\nAssim que possível, pode retirar na portaria. Obrigado!';
     return msg;
   }
@@ -1580,12 +1582,56 @@
     suportaCompartilharArquivo = !!(navigator.canShare && navigator.canShare({ files: [new File(['x'], 'teste.jpg', { type: 'image/jpeg' })] }));
   }catch(e){ suportaCompartilharArquivo = false; }
 
+  // link temporário (7 dias) da foto para o morador abrir pela mensagem do WhatsApp
+  const linksFotoMorador = {}; // caminho -> { url, exp }
+  function linkFotoEmCache(pkg){
+    const c = pkg.fotoPath && linksFotoMorador[pkg.fotoPath];
+    return c && c.url && c.exp > Date.now() ? c.url : null;
+  }
+  async function prepararLinkFoto(pkg){
+    // falhou: registra sem link por 5 min (o aviso segue sem o link, sem repetir a tentativa)
+    linksFotoMorador[pkg.fotoPath] = { url: null, exp: Date.now() + 5 * 60 * 1000 };
+    try{
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(pkg.fotoPath, 7 * 24 * 60 * 60);
+      if(error || !data) throw error || new Error('sem link');
+      linksFotoMorador[pkg.fotoPath] = { url: data.signedUrl, exp: Date.now() + 6 * 24 * 60 * 60 * 1000 };
+    }catch(err){
+      console.error('Erro ao gerar link da foto', err);
+    }
+  }
+
+  // foto em PNG para a área de transferência (o navegador só aceita PNG ao copiar imagem)
+  function fotoComoPng(url){
+    return fetch(url).then(r => r.blob()).then(blob => createImageBitmap(blob)).then(bmp => {
+      const c = document.createElement('canvas');
+      c.width = bmp.width; c.height = bmp.height;
+      c.getContext('2d').drawImage(bmp, 0, 0);
+      return new Promise((resolve, reject) => c.toBlob(b => b ? resolve(b) : reject(new Error('falha ao gerar PNG')), 'image/png'));
+    });
+  }
+  const atalhoColar = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? 'Cmd+V' : 'Ctrl+V';
+  function copiarFotoParaColar(pngPromessa){
+    if(!pngPromessa) return;
+    try{
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': pngPromessa })])
+        .then(() => toast('📋 Foto copiada! Na conversa do WhatsApp, aperte ' + atalhoColar + ' e depois Enter.', 7000))
+        .catch(err => console.warn('Não foi possível copiar a foto', err));
+    }catch(err){ console.warn('Não foi possível copiar a foto', err); }
+  }
+
   window.abrirModalAviso = function(pkg, tipo){
     tipo = tipo === 'entrega' ? 'entrega' : 'chegada';
     const destinatarios = construirDestinatarios(pkg.apto, pkg.telefone, pkg.morador || ('morador(a) do apto ' + pkg.apto));
     document.getElementById('avisoTitulo').textContent = (tipo === 'entrega' ? 'Avisar retirada da encomenda - apto ' : 'Avisar moradores do apto ') + pkg.apto;
     const lista = document.getElementById('avisoLista');
     const vazio = document.getElementById('avisoVazio');
+    if(tipo === 'chegada' && pkg.fotoPath && destinatarios.length > 0 && !(linksFotoMorador[pkg.fotoPath] && linksFotoMorador[pkg.fotoPath].exp > Date.now())){
+      vazio.classList.add('hidden');
+      lista.innerHTML = '<div class="empty" style="padding:10px;">Preparando aviso…</div>';
+      modalAviso.classList.remove('hidden');
+      prepararLinkFoto(pkg).finally(() => abrirModalAviso(pkg, tipo));
+      return;
+    }
     if(destinatarios.length === 0){
       lista.innerHTML = '';
       vazio.classList.remove('hidden');
@@ -1594,6 +1640,9 @@
     }
     vazio.classList.add('hidden');
     const mostrarFoto = tipo === 'chegada';
+    const podeCopiarFoto = mostrarFoto && pkg.foto && navigator.clipboard && window.ClipboardItem;
+    const pngPromessa = podeCopiarFoto ? fotoComoPng(pkg.foto) : null;
+    if(pngPromessa) pngPromessa.catch(err => console.warn('Foto indisponível para copiar', err));
     lista.innerHTML = destinatarios.map(d => {
       const numeroValido = !!formatarTelefoneWhats(d.telefone);
       return `
@@ -1619,6 +1668,7 @@
       if(btnEnviar){
         btnEnviar.addEventListener('click', () => {
           const link = linkWhatsAppAppPara(pkg, { nome, telefone }, tipo);
+          copiarFotoParaColar(pngPromessa);
           if(link) window.location.href = link;
           else alert('Número de WhatsApp inválido.');
         });
@@ -1627,6 +1677,7 @@
       if(btnEnviarWeb){
         btnEnviarWeb.addEventListener('click', () => {
           const link = linkWhatsAppWebPara(pkg, { nome, telefone }, tipo);
+          copiarFotoParaColar(pngPromessa);
           if(link) window.open(link, '_blank');
           else alert('Número de WhatsApp inválido.');
         });
